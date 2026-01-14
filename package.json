@@ -1,5 +1,22 @@
 {
     "name": "jandrly-portfolio",
+    "version": "1.0.0",
+    "description": "Jandrly's Portfolio",
+    "author": "Jandrly",
+    "license": "MIT",
+    "homepage": "https://jandrly.cz",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/jdrly/jandrly-portfolio"
+    },
+    "bugs": {
+        "url": "https://github.com/jdrly/jandrly-portfolio/issues"
+    },
+    "keywords": [
+        "portfolio",
+        "jandrly",
+        "jandrly-portfolio"
+    ],
     "private": true,
     "type": "module",
     "scripts": {
