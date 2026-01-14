@@ -20,6 +20,15 @@
     --spacing-section: clamp(4rem, 8vw, 8rem);
 }
 
+/* Utilities */
+@utility scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    &::-webkit-scrollbar {
+        display: none;
+    }
+}
+
 /* Base styles */
 body {
     @apply bg-bg text-text font-sans antialiased;
