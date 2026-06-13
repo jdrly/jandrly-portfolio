@@ -1,49 +1,42 @@
 import { Link } from '@tanstack/react-router'
-
-interface SocialLink {
-    label: string
-    href: string
-}
-
-const socialLinks: SocialLink[] = [
-    { label: 'Facebook', href: '#' },
-    { label: 'LinkedIn', href: '#' },
-    { label: 'GitHub', href: '#' },
-]
+import { BrandIcon } from '@/components/SocialLinks'
+import { socialLinks } from '@/lib/socialLinks'
+import * as m from '@/paraglide/messages'
+import { localizeHref } from '@/paraglide/runtime'
 
 export function Footer() {
     const currentYear = new Date().getFullYear()
 
     return (
-        <footer className="border-t border-bg-elevated bg-bg px-6 py-20">
+        <footer className="border-t border-bg-elevated bg-bg px-4 pb-24 pt-12 sm:px-6 sm:pb-28 sm:pt-20">
             <div className="mx-auto flex max-w-7xl flex-col items-center text-center">
                 {/* Large Decorative Name */}
-                <h2 className="pointer-events-none mb-10 select-none text-[10vw] font-bold leading-none text-bg-elevated">
-                    JAN DRLÝ
+                <h2 className="pointer-events-none mb-6 select-none text-[12vw] font-bold leading-none text-bg-elevated sm:mb-10 sm:text-[10vw] uppercase">
+                    Jan Drlý
                 </h2>
 
                 {/* Social Links */}
-                <div className="flex flex-wrap justify-center gap-8 text-text-muted">
+                <div className="flex flex-wrap justify-center gap-4 text-text-muted sm:gap-8">
                     {socialLinks.map((link) => (
                         <a
                             key={link.label}
                             href={link.href}
-                            className="transition-colors hover:text-white"
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-2 transition-colors hover:text-white"
                         >
+                            <BrandIcon icon={link.icon} />
                             {link.label}
                         </a>
                     ))}
                 </div>
 
                 {/* Copyright and Privacy */}
-                <div className="mt-12 flex w-full max-w-sm flex-col items-center justify-between gap-6 text-sm text-[#444444] md:flex-row">
-                    <p>© {currentYear} Jan Drlý.</p>
-                    <div className="flex gap-4">
-                        <Link
-                            to="/privacy"
-                            className="transition-colors hover:text-white"
-                        >
-                            Privacy
+                <div className="mt-8 flex flex-col-reverse items-center justify-center gap-4 text-xs text-[#444444] sm:mt-12 sm:gap-8 sm:text-sm md:flex-row">
+                    <p className="whitespace-nowrap">{m.footer_copyright({ year: currentYear })}</p>
+                    <div className="flex gap-4 whitespace-nowrap">
+                        <Link to={localizeHref('/privacy')} className="transition-colors hover:text-white">
+                            {m.footer_privacy()}
                         </Link>
                     </div>
                 </div>

@@ -1,25 +1,100 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useEffect, useReducer } from 'react'
 
 interface CodeVariant {
-    lines: string[]
+    lines: Array<string>
     label: string
 }
 
 interface UseCodeTypewriterOptions {
-    variants: CodeVariant[]
+    variants: Array<CodeVariant>
     typingSpeed?: number
     lineDelay?: number
     startDelay?: number
     variantDelay?: number
+    enabled?: boolean
 }
 
 interface UseCodeTypewriterReturn {
-    displayedLines: string[]
+    displayedLines: Array<string>
     currentLineIndex: number
     currentVariantIndex: number
     currentVariantLabel: string
     isComplete: boolean
     isTyping: boolean
+}
+
+interface CodeTypewriterState {
+    currentVariantIndex: number
+    displayedLines: Array<string>
+    currentLineIndex: number
+    currentCharIndex: number
+    isComplete: boolean
+    isTyping: boolean
+    hasStarted: boolean
+}
+
+type CodeTypewriterAction =
+    | { type: 'start' }
+    | { type: 'type-character'; line: string }
+    | { type: 'finish-line'; line: string; totalLines: number }
+    | { type: 'complete' }
+    | { type: 'cycle-variant'; variantsLength: number }
+
+const emptyLines: Array<string> = []
+
+function createInitialState(currentVariantIndex = 0): CodeTypewriterState {
+    return {
+        currentVariantIndex,
+        displayedLines: [],
+        currentLineIndex: 0,
+        currentCharIndex: 0,
+        isComplete: false,
+        isTyping: false,
+        hasStarted: false,
+    }
+}
+
+function codeTypewriterReducer(state: CodeTypewriterState, action: CodeTypewriterAction): CodeTypewriterState {
+    switch (action.type) {
+        case 'start':
+            return {
+                ...state,
+                displayedLines: [''],
+                hasStarted: true,
+                isTyping: true,
+            }
+        case 'type-character': {
+            const partialLine = action.line.slice(0, state.currentCharIndex + 1)
+            const displayedLines = state.displayedLines.length === 0 ? [partialLine] : [...state.displayedLines.slice(0, -1), partialLine]
+
+            return {
+                ...state,
+                displayedLines,
+                currentCharIndex: state.currentCharIndex + 1,
+            }
+        }
+        case 'finish-line': {
+            const nextLineIndex = state.currentLineIndex + 1
+            const nextLines = [...state.displayedLines.slice(0, -1), action.line]
+
+            return {
+                ...state,
+                displayedLines: nextLineIndex < action.totalLines ? [...nextLines, ''] : nextLines,
+                currentLineIndex: nextLineIndex,
+                currentCharIndex: 0,
+                isComplete: nextLineIndex >= action.totalLines,
+                isTyping: nextLineIndex < action.totalLines,
+            }
+        }
+        case 'complete':
+            return {
+                ...state,
+                isComplete: true,
+                isTyping: false,
+            }
+        case 'cycle-variant':
+            return createInitialState((state.currentVariantIndex + 1) % action.variantsLength)
+    }
 }
 
 export function useCodeTypewriter({
@@ -28,142 +103,73 @@ export function useCodeTypewriter({
     lineDelay = 150,
     startDelay = 500,
     variantDelay = 4000,
+    enabled = true,
 }: UseCodeTypewriterOptions): UseCodeTypewriterReturn {
-    const [currentVariantIndex, setCurrentVariantIndex] = useState(0)
-    const [displayedLines, setDisplayedLines] = useState<string[]>([])
-    const [currentLineIndex, setCurrentLineIndex] = useState(0)
-    const [currentCharIndex, setCurrentCharIndex] = useState(0)
-    const [isComplete, setIsComplete] = useState(false)
-    const [isTyping, setIsTyping] = useState(false)
-    const [hasStarted, setHasStarted] = useState(false)
+    const [state, dispatch] = useReducer(codeTypewriterReducer, undefined, () => createInitialState())
 
-    const currentVariant = variants[currentVariantIndex]
-    const lines = currentVariant?.lines ?? []
+    const currentVariant = variants.length > 0 ? variants[state.currentVariantIndex] : undefined
+    const lines = currentVariant ? currentVariant.lines : emptyLines
 
-    const reset = useCallback(() => {
-        setDisplayedLines([])
-        setCurrentLineIndex(0)
-        setCurrentCharIndex(0)
-        setIsComplete(false)
-        setIsTyping(false)
-        setHasStarted(false)
-    }, [])
-
-    // Start delay
     useEffect(() => {
-        const timer = setTimeout(() => {
-            setHasStarted(true)
-            setIsTyping(true)
-        }, startDelay)
+        if (!enabled || variants.length === 0) return
 
-        return () => clearTimeout(timer)
-    }, [startDelay, currentVariantIndex])
+        if (!state.hasStarted) {
+            const startTimer = setTimeout(() => {
+                dispatch({ type: 'start' })
+            }, startDelay)
 
-    // Main typing effect
-    useEffect(() => {
-        if (!hasStarted || isComplete) return
-
-        const currentLine = lines[currentLineIndex]
-
-        // If we've finished all lines
-        if (currentLineIndex >= lines.length) {
-            setIsComplete(true)
-            setIsTyping(false)
-            return
+            return () => clearTimeout(startTimer)
         }
 
-        // If we've finished the current line
-        if (currentCharIndex >= currentLine.length) {
-            const lineDelayTimer = setTimeout(() => {
-                setDisplayedLines((prev) => [...prev.slice(0, -1), currentLine])
-                setCurrentLineIndex((prev) => prev + 1)
-                setCurrentCharIndex(0)
+        if (state.isComplete) {
+            const cycleTimer = setTimeout(() => {
+                dispatch({ type: 'cycle-variant', variantsLength: variants.length })
+            }, variantDelay)
 
-                // Add empty string for next line if there are more lines
-                if (currentLineIndex + 1 < lines.length) {
-                    setDisplayedLines((prev) => [...prev, ''])
-                }
+            return () => clearTimeout(cycleTimer)
+        }
+
+        const currentLine = lines[state.currentLineIndex]
+
+        if (!currentLine) {
+            const lineDelayTimer = setTimeout(() => {
+                dispatch({ type: 'complete' })
             }, lineDelay)
 
             return () => clearTimeout(lineDelayTimer)
         }
 
-        // Type the next character
+        if (state.currentCharIndex >= currentLine.length) {
+            const lineDelayTimer = setTimeout(() => {
+                dispatch({
+                    type: 'finish-line',
+                    line: currentLine,
+                    totalLines: lines.length,
+                })
+            }, lineDelay)
+
+            return () => clearTimeout(lineDelayTimer)
+        }
+
         const typingTimer = setTimeout(() => {
-            const partialLine = currentLine.slice(0, currentCharIndex + 1)
-
-            setDisplayedLines((prev) => {
-                if (prev.length === 0 || currentCharIndex === 0) {
-                    return [...prev.slice(0, -1), partialLine].filter(
-                        (_, i) => i < currentLineIndex || partialLine
-                    )
-                }
-                const newLines = [...prev]
-                newLines[newLines.length - 1] = partialLine
-                return newLines
-            })
-
-            setCurrentCharIndex((prev) => prev + 1)
+            dispatch({ type: 'type-character', line: currentLine })
         }, typingSpeed)
 
         return () => clearTimeout(typingTimer)
-    }, [
-        hasStarted,
-        isComplete,
-        currentLineIndex,
-        currentCharIndex,
-        lines,
-        typingSpeed,
-        lineDelay,
-    ])
-
-    // Initialize first line
-    useEffect(() => {
-        if (hasStarted && displayedLines.length === 0) {
-            setDisplayedLines([''])
-        }
-    }, [hasStarted, displayedLines.length])
-
-    // Cycle to next variant when complete
-    useEffect(() => {
-        if (!isComplete) return
-
-        const cycleTimer = setTimeout(() => {
-            const nextIndex = (currentVariantIndex + 1) % variants.length
-            setCurrentVariantIndex(nextIndex)
-            reset()
-            // Trigger restart after reset
-            setTimeout(() => {
-                setHasStarted(true)
-                setIsTyping(true)
-            }, startDelay)
-        }, variantDelay)
-
-        return () => clearTimeout(cycleTimer)
-    }, [isComplete, variantDelay, reset, startDelay, currentVariantIndex, variants.length])
+    }, [enabled, state, variants.length, lines, startDelay, variantDelay, typingSpeed, lineDelay])
 
     return {
-        displayedLines,
-        currentLineIndex,
-        currentVariantIndex,
-        currentVariantLabel: currentVariant?.label ?? '',
-        isComplete,
-        isTyping,
+        displayedLines: state.displayedLines,
+        currentLineIndex: state.currentLineIndex,
+        currentVariantIndex: state.currentVariantIndex,
+        currentVariantLabel: currentVariant ? currentVariant.label : '',
+        isComplete: state.isComplete,
+        isTyping: state.isTyping,
     }
 }
 
 // Token types for syntax highlighting
-export type TokenType =
-    | 'keyword'
-    | 'string'
-    | 'comment'
-    | 'function'
-    | 'property'
-    | 'number'
-    | 'operator'
-    | 'punctuation'
-    | 'type'
-    | 'text'
+export type TokenType = 'keyword' | 'string' | 'comment' | 'function' | 'property' | 'number' | 'operator' | 'punctuation' | 'type' | 'text'
 
 export interface Token {
     type: TokenType
@@ -171,8 +177,8 @@ export interface Token {
 }
 
 // Simple tokenizer for TypeScript-like syntax
-export function tokenizeLine(line: string): Token[] {
-    const tokens: Token[] = []
+export function tokenizeLine(line: string): Array<Token> {
+    const tokens: Array<Token> = []
     let remaining = line
 
     const patterns: Array<{ type: TokenType; regex: RegExp }> = [

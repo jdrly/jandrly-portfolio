@@ -1,20 +1,12 @@
 {
-  "projectName": "jandrly-portfolio",
-  "mode": "file-router",
-  "typescript": true,
-  "packageManager": "pnpm",
-  "tailwind": true,
-  "addOnOptions": {},
-  "git": true,
-  "version": 1,
-  "framework": "react-cra",
-  "chosenAddOns": [
-    "eslint",
-    "nitro",
-    "start",
-    "form",
-    "mcp",
-    "tanstack-query",
-    "store"
-  ]
+    "projectName": "jandrly-portfolio",
+    "mode": "file-router",
+    "typescript": true,
+    "packageManager": "pnpm",
+    "tailwind": true,
+    "addOnOptions": {},
+    "git": true,
+    "version": 1,
+    "framework": "react-cra",
+    "chosenAddOns": ["eslint", "nitro", "start", "form", "mcp", "tanstack-query", "store"]
 }

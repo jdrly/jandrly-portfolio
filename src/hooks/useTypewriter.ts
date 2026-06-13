@@ -1,11 +1,12 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 interface UseTypewriterOptions {
-    words: string[]
+    words: Array<string>
     typingSpeed?: number
     deletingSpeed?: number
     pauseDuration?: number
     lastWordPauseDuration?: number
+    enabled?: boolean
 }
 
 interface UseTypewriterReturn {
@@ -14,58 +15,59 @@ interface UseTypewriterReturn {
     currentWordIndex: number
 }
 
+type TypewriterState = UseTypewriterReturn
+
 export function useTypewriter({
     words,
     typingSpeed = 150,
     deletingSpeed = 50,
     pauseDuration = 1500,
     lastWordPauseDuration = 5000,
+    enabled = true,
 }: UseTypewriterOptions): UseTypewriterReturn {
-    const [currentWordIndex, setCurrentWordIndex] = useState(0)
-    const [displayText, setDisplayText] = useState(words[0])
-    const [isDeleting, setIsDeleting] = useState(false)
+    const [state, setState] = useState<TypewriterState>(() => ({
+        currentWordIndex: 0,
+        displayText: words[0] ?? '',
+        isDeleting: false,
+    }))
 
     useEffect(() => {
-        const speed = isDeleting ? deletingSpeed : typingSpeed
-        const isLastWord = currentWordIndex === words.length - 1
+        if (!enabled || words.length === 0) return
+
+        const fullWord = words[state.currentWordIndex] ?? ''
+        const speed = state.isDeleting ? deletingSpeed : typingSpeed
+        const isLastWord = state.currentWordIndex === words.length - 1
         const pauseTime = isLastWord ? lastWordPauseDuration : pauseDuration
 
-        let timeoutId: ReturnType<typeof setTimeout>
+        const delay = !state.isDeleting && state.displayText === fullWord ? pauseTime : speed
 
-        function tick() {
-            const fullWord = words[currentWordIndex]
+        const timeoutId = setTimeout(() => {
+            setState((current) => {
+                const currentWord = words[current.currentWordIndex] ?? ''
 
-            if (!isDeleting && displayText === fullWord) {
-                timeoutId = setTimeout(() => {
-                    setIsDeleting(true)
-                }, pauseTime)
-            } else if (isDeleting && displayText === '') {
-                setIsDeleting(false)
-                setCurrentWordIndex((prev) => (prev + 1) % words.length)
-            } else {
-                timeoutId = setTimeout(() => {
-                    if (isDeleting) {
-                        setDisplayText((prev) => prev.slice(0, -1))
-                    } else {
-                        setDisplayText(fullWord.slice(0, displayText.length + 1))
+                if (!current.isDeleting && current.displayText === currentWord) {
+                    return { ...current, isDeleting: true }
+                }
+
+                if (current.isDeleting && current.displayText === '') {
+                    return {
+                        currentWordIndex: (current.currentWordIndex + 1) % words.length,
+                        displayText: '',
+                        isDeleting: false,
                     }
-                }, speed)
-            }
-        }
+                }
 
-        tick()
+                return {
+                    ...current,
+                    displayText: current.isDeleting
+                        ? current.displayText.slice(0, -1)
+                        : currentWord.slice(0, current.displayText.length + 1),
+                }
+            })
+        }, delay)
 
         return () => clearTimeout(timeoutId)
-    }, [
-        displayText,
-        isDeleting,
-        currentWordIndex,
-        words,
-        typingSpeed,
-        deletingSpeed,
-        pauseDuration,
-        lastWordPauseDuration,
-    ])
+    }, [enabled, state, words, typingSpeed, deletingSpeed, pauseDuration, lastWordPauseDuration])
 
-    return { displayText, isDeleting, currentWordIndex }
+    return state
 }

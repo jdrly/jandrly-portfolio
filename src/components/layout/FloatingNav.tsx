@@ -1,46 +1,53 @@
 import { Link } from '@tanstack/react-router'
-import { LayoutGrid, Globe, Box, User } from 'lucide-react'
+import { Box, LayoutGrid, User } from 'lucide-react'
+import * as m from '@/paraglide/messages'
+import { localizeHref } from '@/paraglide/runtime'
+import { LanguageSwitcherMinimal } from '@/components/LanguageSwitcher'
 
 interface NavItem {
-    label: string
+    labelKey: () => string
     to: string
     icon: React.ReactNode
 }
 
-const navItems: NavItem[] = [
-    { label: 'Home', to: '/', icon: <LayoutGrid size={20} /> },
-    { label: 'Work', to: '/work', icon: <Globe size={20} /> },
-    { label: 'Services', to: '/services', icon: <Box size={20} /> },
-    { label: 'About', to: '/about', icon: <User size={20} /> },
-]
+function useNavItems(): Array<NavItem> {
+    return [
+        { labelKey: m.nav_home, to: '/', icon: <LayoutGrid size={20} /> },
+        { labelKey: m.nav_about, to: '/about', icon: <User size={20} /> },
+        { labelKey: m.nav_services, to: '/services', icon: <Box size={20} /> },
+    ]
+}
 
 export function FloatingNav() {
+    const navItems = useNavItems()
+
     return (
-        <div className="fixed bottom-8 left-1/2 z-50 flex -translate-x-1/2 items-center rounded-full border border-border bg-bg-card/90 p-1.5 shadow-2xl backdrop-blur-md">
+        <div className="fixed bottom-4 left-1/2 z-50 flex -translate-x-1/2 items-center rounded-full border border-border bg-bg-card/90 p-1 shadow-2xl backdrop-blur-md sm:bottom-8 sm:p-1.5">
             {/* Navigation Icons */}
-            <div className="flex items-center gap-1 border-r border-border pl-2 pr-2">
+            <div className="flex items-center gap-0.5 border-r border-border px-1 sm:gap-1 sm:px-2">
                 {navItems.map((item) => (
                     <Link
                         key={item.to}
-                        to={item.to}
-                        className="group relative rounded-full p-3 text-white transition-colors hover:bg-bg-elevated"
+                        to={localizeHref(item.to)}
+                        className="group relative rounded-full p-2 text-white transition-colors hover:bg-bg-elevated sm:p-3"
                     >
                         {item.icon}
-                        {/* Tooltip */}
-                        <span className="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-bg-elevated px-3 py-1 text-xs opacity-0 transition-opacity group-hover:opacity-100">
-                            {item.label}
+                        {/* Tooltip - hidden on mobile */}
+                        <span className="pointer-events-none absolute -top-10 left-1/2 hidden -translate-x-1/2 whitespace-nowrap rounded-full bg-bg-elevated px-3 py-1 text-xs opacity-0 transition-opacity group-hover:opacity-100 sm:block">
+                            {item.labelKey()}
                         </span>
                     </Link>
                 ))}
+                <LanguageSwitcherMinimal />
             </div>
 
             {/* Contact Button */}
-            <div className="pl-5 pr-2">
+            <div className="pl-2 pr-1 sm:pl-5 sm:pr-2">
                 <Link
-                    to="/contact"
-                    className="block rounded-full bg-accent px-5 py-2.5 text-sm font-bold uppercase tracking-wide text-black transition-colors hover:bg-accent-hover"
+                    to={localizeHref('/contact')}
+                    className="block rounded-full bg-accent px-3 py-2 text-xs font-bold uppercase tracking-wide text-black transition-colors hover:bg-accent-hover sm:px-5 sm:py-2.5 sm:text-sm"
                 >
-                    Contact
+                    {m.nav_contact()}
                 </Link>
             </div>
         </div>
