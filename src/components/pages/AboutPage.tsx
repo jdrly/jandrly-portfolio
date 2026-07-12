@@ -1,5 +1,5 @@
 import { m as motion, useReducedMotion } from 'framer-motion'
-import { Heart, Target, Terminal, Users } from 'lucide-react'
+import { Heart, Target, Terminal } from 'lucide-react'
 import { siConvex, siHubspot, siLaravel, siNestjs, siNextdotjs, siPayloadcms, siPostgresql, siReact, siVuedotjs } from 'simple-icons'
 import { PageHero } from './PageHero'
 import { LetsTalkSection } from '@/components/sections'
@@ -73,10 +73,15 @@ function BioSection() {
                 <div className="grid grid-cols-1 gap-10 items-center sm:gap-16 md:grid-cols-2">
                     <FadeIn direction="left">
                         <div className="relative aspect-3/4 md:aspect-square bg-bg-card rounded-2xl overflow-hidden border border-border-subtle group">
-                            <div className="absolute inset-0 flex flex-col items-center justify-center text-border group-hover:text-text-subtle transition-colors">
-                                <Users size={48} className="mb-4 opacity-50" />
-                                <span className="text-sm uppercase tracking-widest font-medium">{m.about_portrait_slot()}</span>
-                            </div>
+                            <img
+                                src="/images/jd-portrait.avif"
+                                alt="Jan Drlý"
+                                width={1080}
+                                height={1080}
+                                loading="lazy"
+                                decoding="async"
+                                className="absolute inset-0 h-full w-full object-cover"
+                            />
 
                             <div className="absolute inset-0 bg-linear-to-tr from-accent/5 to-transparent opacity-50" />
                             <div className="absolute top-4 left-4 w-4 h-4 border-t border-l border-border" />
