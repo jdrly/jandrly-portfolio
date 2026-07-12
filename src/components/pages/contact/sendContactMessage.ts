@@ -3,30 +3,42 @@ import { z } from 'zod'
 
 const DEFAULT_CONTACT_EMAIL = 'jd@jandrly.cz'
 const DEFAULT_FROM_EMAIL = 'WEB | jandrly.cz <web@jandrly.cz>'
+const MIN_FORM_COMPLETION_MS = 3_000
+const TURNSTILE_VERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify'
 
-const contactMessageSchema = z.object({
+export const contactMessageSchema = z.object({
     name: z.string().trim().min(2).max(120),
     email: z.email().trim().max(254),
     phone: z.string().trim().max(40).optional(),
     message: z.string().trim().min(10).max(5000),
-    botcheck: z.string().optional(),
+    website: z.string().max(200).optional(),
+    formStartedAt: z.number().int().positive(),
+    turnstileToken: z.string().min(1).max(2048),
 })
 
 type ServerEnv = {
     RESEND_SEND?: string
     RESEND_FROM?: string
     RESEND_TO?: string
+    TURNSTILE_SECRET_KEY?: string
 }
+
+type ContactMessage = z.infer<typeof contactMessageSchema>
+
+const turnstileResponseSchema = z.object({
+    success: z.boolean(),
+    action: z.string().optional(),
+})
 
 function escapeHtml(value: string) {
     return value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;').replaceAll("'", '&#39;')
 }
 
-function buildEmailText(data: z.infer<typeof contactMessageSchema>) {
+function buildEmailText(data: ContactMessage) {
     return [`Name: ${data.name}`, `Email: ${data.email}`, `Phone: ${data.phone || 'Not provided'}`, '', 'Message:', data.message].join('\n')
 }
 
-function buildEmailHtml(data: z.infer<typeof contactMessageSchema>) {
+function buildEmailHtml(data: ContactMessage) {
     const fields = [
         ['Name', data.name],
         ['Email', data.email],
@@ -91,20 +103,55 @@ async function getServerEnv(): Promise<ServerEnv> {
         RESEND_SEND: process.env.RESEND_SEND || localEnv.RESEND_SEND,
         RESEND_FROM: process.env.RESEND_FROM || localEnv.RESEND_FROM || DEFAULT_FROM_EMAIL,
         RESEND_TO: process.env.RESEND_TO || localEnv.RESEND_TO || DEFAULT_CONTACT_EMAIL,
+        TURNSTILE_SECRET_KEY: process.env.TURNSTILE_SECRET_KEY || localEnv.TURNSTILE_SECRET_KEY,
+    }
+}
+
+export function isLikelyBotSubmission(data: Pick<ContactMessage, 'website' | 'formStartedAt'>, now = Date.now()) {
+    const completionTime = now - data.formStartedAt
+
+    return Boolean(data.website) || completionTime < MIN_FORM_COMPLETION_MS
+}
+
+export async function verifyTurnstileToken(token: string, secret: string) {
+    try {
+        const response = await fetch(TURNSTILE_VERIFY_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({ secret, response: token }),
+            signal: AbortSignal.timeout(5_000),
+        })
+
+        if (!response.ok) {
+            return false
+        }
+
+        const result = turnstileResponseSchema.safeParse(await response.json())
+
+        return result.success && result.data.success && result.data.action === 'contact'
+    } catch (error) {
+        console.error('Turnstile verification failed', error)
+        return false
     }
 }
 
 export const sendContactMessage = createServerFn({ method: 'POST' })
     .validator(contactMessageSchema)
     .handler(async ({ data }) => {
-        if (data.botcheck) {
+        if (isLikelyBotSubmission(data)) {
             return { status: 'success' as const }
         }
 
-        const { RESEND_SEND, RESEND_FROM, RESEND_TO } = await getServerEnv()
+        const { RESEND_SEND, RESEND_FROM, RESEND_TO, TURNSTILE_SECRET_KEY } = await getServerEnv()
 
-        if (!RESEND_SEND || !RESEND_FROM || !RESEND_TO) {
+        if (!RESEND_SEND || !RESEND_FROM || !RESEND_TO || !TURNSTILE_SECRET_KEY) {
             return { status: 'configuration_error' as const }
+        }
+
+        const isVerified = await verifyTurnstileToken(data.turnstileToken, TURNSTILE_SECRET_KEY)
+
+        if (!isVerified) {
+            return { status: 'verification_error' as const }
         }
 
         const { Resend } = await import('resend')

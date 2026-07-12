@@ -138,6 +138,7 @@
     "contact_form_success_text": "Děkuji za zprávu. Ozvu se vám co nejdříve.",
     "contact_form_error_not_configured": "Kontaktní formulář není nastaven. Kontaktujte mě prosím přímo e-mailem.",
     "contact_form_error_network": "Chyba připojení. Zkuste to prosím znovu.",
+    "contact_form_error_verification": "Ověření uživatele selhalo. Zkuste to prosím znovu.",
 
     "contact_validation_name_min": "Jméno musí mít alespoň 2 znaky",
     "contact_validation_email_invalid": "Zadejte prosím platnou e-mailovou adresu",

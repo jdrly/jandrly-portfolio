@@ -138,6 +138,7 @@
     "contact_form_success_text": "Thank you for reaching out. I'll get back to you as soon as possible.",
     "contact_form_error_not_configured": "Contact form is not configured. Please contact me directly via email.",
     "contact_form_error_network": "Network error. Please try again.",
+    "contact_form_error_verification": "Human verification failed. Please try again.",
 
     "contact_validation_name_min": "Name must be at least 2 characters",
     "contact_validation_email_invalid": "Please enter a valid email address",

@@ -5,8 +5,11 @@ import { AlertCircle, CheckCircle2, Send } from 'lucide-react'
 import { useState } from 'react'
 import { z } from 'zod'
 import { sendContactMessage } from './sendContactMessage'
+import { TurnstileWidget } from './TurnstileWidget'
 import { FadeIn, smoothEase } from '@/components/motion'
 import * as m from '@/paraglide/messages'
+
+const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY || ''
 
 function createNameSchema() {
     return z.string().min(2, m.contact_validation_name_min())
@@ -70,11 +73,75 @@ function FieldError({ field }: FieldErrorProps) {
     )
 }
 
-type SubmitStatus = 'success' | 'configuration_error' | 'send_error' | null
+type SubmitStatus = 'success' | 'configuration_error' | 'verification_error' | 'send_error' | null
+
+interface SubmitFeedbackProps {
+    status: SubmitStatus
+    isTurnstileConfigured: boolean
+}
+
+function SubmitFeedback({ status, isTurnstileConfigured }: SubmitFeedbackProps) {
+    return (
+        <AnimatePresence>
+            {status === 'success' && (
+                <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="flex items-start gap-2 rounded-lg border border-green-500/30 bg-green-500/10 p-4 text-sm text-green-400"
+                >
+                    <CheckCircle2 size={18} className="mt-0.5 shrink-0" />
+                    <span>
+                        <strong className="block">{m.contact_form_success_title()}</strong>
+                        {m.contact_form_success_text()}
+                    </span>
+                </motion.div>
+            )}
+
+            {(status === 'configuration_error' || !isTurnstileConfigured) && (
+                <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="flex items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-400"
+                >
+                    <AlertCircle size={18} />
+                    {m.contact_form_error_not_configured()}
+                </motion.div>
+            )}
+
+            {status === 'send_error' && (
+                <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="flex items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-400"
+                >
+                    <AlertCircle size={18} />
+                    {m.contact_form_error_network()}
+                </motion.div>
+            )}
+
+            {status === 'verification_error' && (
+                <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="flex items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-400"
+                >
+                    <AlertCircle size={18} />
+                    {m.contact_form_error_verification()}
+                </motion.div>
+            )}
+        </AnimatePresence>
+    )
+}
 
 export function ContactForm() {
     const sendContactMessageFn = useServerFn(sendContactMessage)
     const [submitStatus, setSubmitStatus] = useState<SubmitStatus>(null)
+    const [turnstileResetSignal, setTurnstileResetSignal] = useState(0)
+    const isTurnstileConfigured = Boolean(TURNSTILE_SITE_KEY)
 
     const form = useForm({
         defaultValues: {
@@ -82,16 +149,29 @@ export function ContactForm() {
             email: '',
             phone: '',
             message: '',
-            botcheck: '',
+            website: '',
+            formStartedAt: Date.now(),
+            turnstileToken: '',
         },
         onSubmit: async ({ value, formApi }) => {
             setSubmitStatus(null)
             const result = await sendContactMessageFn({ data: value })
 
             setSubmitStatus(result.status)
+            setTurnstileResetSignal((signal) => signal + 1)
 
             if (result.status === 'success') {
-                formApi.reset()
+                formApi.reset({
+                    name: '',
+                    email: '',
+                    phone: '',
+                    message: '',
+                    website: '',
+                    formStartedAt: Date.now(),
+                    turnstileToken: '',
+                })
+            } else {
+                formApi.setFieldValue('turnstileToken', '')
             }
         },
     })
@@ -113,62 +193,22 @@ export function ContactForm() {
                 <form className="space-y-6 p-6 sm:p-8 md:p-12" action={handleFormAction}>
                     <h2 className="text-xl font-bold sm:text-2xl">{m.contact_form_heading()}</h2>
 
-                    <AnimatePresence>
-                        {submitStatus === 'success' && (
-                            <motion.div
-                                initial={{ opacity: 0, y: -10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -10 }}
-                                className="flex items-start gap-2 rounded-lg border border-green-500/30 bg-green-500/10 p-4 text-sm text-green-400"
-                            >
-                                <CheckCircle2 size={18} className="mt-0.5 shrink-0" />
-                                <span>
-                                    <strong className="block">{m.contact_form_success_title()}</strong>
-                                    {m.contact_form_success_text()}
-                                </span>
-                            </motion.div>
-                        )}
+                    <SubmitFeedback status={submitStatus} isTurnstileConfigured={isTurnstileConfigured} />
 
-                        {submitStatus === 'configuration_error' && (
-                            <motion.div
-                                initial={{ opacity: 0, y: -10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -10 }}
-                                className="flex items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-400"
-                            >
-                                <AlertCircle size={18} />
-                                {m.contact_form_error_not_configured()}
-                            </motion.div>
-                        )}
-
-                        {submitStatus === 'send_error' && (
-                            <motion.div
-                                initial={{ opacity: 0, y: -10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -10 }}
-                                className="flex items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-400"
-                            >
-                                <AlertCircle size={18} />
-                                {m.contact_form_error_network()}
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-
-                    <form.Field name="botcheck">
+                    <form.Field name="website">
                         {(field) => (
-                            <input
-                                type="text"
-                                id={field.name}
-                                name={field.name}
-                                value={field.state.value}
-                                onChange={(e) => field.handleChange(e.target.value)}
-                                aria-hidden="true"
-                                aria-label="Leave this field empty"
-                                className="hidden"
-                                style={{ display: 'none' }}
-                                tabIndex={-1}
-                                autoComplete="off"
-                            />
+                            <div aria-hidden="true" className="absolute left-[-10000px] top-auto h-px w-px overflow-hidden">
+                                <label htmlFor={field.name}>Company website</label>
+                                <input
+                                    type="url"
+                                    id={field.name}
+                                    name={field.name}
+                                    value={field.state.value}
+                                    onChange={(event) => field.handleChange(event.target.value)}
+                                    tabIndex={-1}
+                                    autoComplete="off"
+                                />
+                            </div>
                         )}
                     </form.Field>
 
@@ -312,11 +352,24 @@ export function ContactForm() {
                         )}
                     </form.Field>
 
-                    <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting] as const}>
-                        {([canSubmit, isSubmitting]) => (
+                    <form.Field name="turnstileToken">
+                        {(field) => (
+                            <TurnstileWidget
+                                siteKey={TURNSTILE_SITE_KEY}
+                                resetSignal={turnstileResetSignal}
+                                onTokenChange={(token) => {
+                                    setSubmitStatus(null)
+                                    field.handleChange(token)
+                                }}
+                            />
+                        )}
+                    </form.Field>
+
+                    <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting, state.values.turnstileToken] as const}>
+                        {([canSubmit, isSubmitting, turnstileToken]) => (
                             <motion.button
                                 type="submit"
-                                disabled={!canSubmit || isSubmitting}
+                                disabled={!canSubmit || isSubmitting || !turnstileToken || !isTurnstileConfigured}
                                 className="flex w-full items-center justify-center gap-2 rounded-xl bg-white py-4 font-bold text-black transition-all hover:bg-accent hover:text-white disabled:cursor-not-allowed disabled:opacity-70"
                                 whileHover={{ scale: canSubmit && !isSubmitting ? 1.02 : 1 }}
                                 whileTap={{ scale: canSubmit && !isSubmitting ? 0.98 : 1 }}

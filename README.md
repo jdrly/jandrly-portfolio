@@ -17,6 +17,18 @@ To build this application for production:
 pnpm build
 ```
 
+## Contact form protection
+
+The contact form requires a Cloudflare Turnstile widget and validates every token on the server before sending email.
+
+1. Create a managed Turnstile widget for `jandrly.cz` in Cloudflare.
+2. Copy `.env.example` to `.env` for local development.
+3. Set `VITE_TURNSTILE_SITE_KEY` to the public sitekey.
+4. Set `TURNSTILE_SECRET_KEY` to the private secret key.
+5. Set the same variables in the production environment and redeploy so Vite embeds the public sitekey during the build.
+
+Never expose `TURNSTILE_SECRET_KEY` through a `VITE_` variable.
+
 ## Testing
 
 This project uses [Vitest](https://vitest.dev/) for testing. You can run the tests with:
