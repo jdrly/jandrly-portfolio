@@ -2,6 +2,7 @@ import { HeadContent, Scripts } from '@tanstack/react-router'
 import { TanStackDevtools } from '@tanstack/react-devtools'
 import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
+import { Analytics } from '@vercel/analytics/react'
 import type { ReactNode } from 'react'
 
 import { getLocale } from '@/paraglide/runtime'
@@ -32,6 +33,7 @@ export function RootDocument({ children }: { children: ReactNode }) {
             </head>
             <body>
                 {children}
+                <Analytics />
                 <TanStackDevtools config={devtoolsConfig} plugins={devtoolsPlugins} />
                 <Scripts />
             </body>
