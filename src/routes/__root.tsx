@@ -49,10 +49,17 @@ export const Route = createRootRouteWithContext<RouterContext>()({
             ],
             links: [
                 { rel: 'stylesheet', href: appCss },
-                { rel: 'icon', href: '/favicon.png?v=20260613c', type: 'image/png', sizes: '512x512' },
-                { rel: 'alternate icon', href: '/favicon.ico?v=20260613c', type: 'image/x-icon' },
-                { rel: 'apple-touch-icon', href: '/apple-touch-icon.png?v=20260613c', sizes: '180x180' },
-                { rel: 'manifest', href: '/manifest.json' },
+                {
+                    rel: 'shortcut icon',
+                    href: '/favicon.ico?v=20260713a',
+                    type: 'image/x-icon',
+                    sizes: '16x16 24x24 32x32 48x48 64x64',
+                },
+                { rel: 'icon', href: '/favicon-16x16.png?v=20260713a', type: 'image/png', sizes: '16x16' },
+                { rel: 'icon', href: '/favicon-32x32.png?v=20260713a', type: 'image/png', sizes: '32x32' },
+                { rel: 'icon', href: '/favicon.svg?v=20260713a', type: 'image/svg+xml', sizes: 'any' },
+                { rel: 'apple-touch-icon', href: '/apple-touch-icon.png?v=20260713a', sizes: '180x180' },
+                { rel: 'manifest', href: '/manifest.json?v=20260713a' },
                 { rel: 'canonical', href: 'https://jandrly.cz' },
             ],
         }
