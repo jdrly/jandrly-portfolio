@@ -8,10 +8,10 @@ import * as m from '@/paraglide/messages'
 
 function useStats() {
     return [
-        { value: '06', label: m.about_stat_years() },
+        { value: '6', label: m.about_stat_years() },
         { value: '32', label: m.about_stat_projects() },
-        { value: '06', label: m.about_stat_lines() },
-        { value: '03', label: m.about_stat_coffee() },
+        { value: '6', label: m.about_stat_lines() },
+        { value: '3', label: m.about_stat_coffee() },
     ]
 }
 
@@ -75,7 +75,7 @@ function BioSection() {
                         <div className="relative aspect-3/4 md:aspect-square bg-bg-card rounded-2xl overflow-hidden border border-border-subtle group">
                             <img
                                 src="/images/jd-portrait.avif"
-                                alt="Jan Drlý"
+                                alt={m.about_portrait_alt()}
                                 width={1080}
                                 height={1080}
                                 loading="lazy"
@@ -92,8 +92,8 @@ function BioSection() {
                     <div className="space-y-6">
                         <FadeIn direction="right" delay={0}>
                             <div className="flex items-center gap-3">
-                                <span className="h-px w-12 bg-border" />
-                                <span className="text-sm font-medium text-text-muted uppercase tracking-widest">{m.about_who_label()}</span>
+                                <span className="h-px w-12 bg-border" aria-hidden="true" />
+                                <span className="text-sm font-medium uppercase tracking-widest text-text-muted">{m.about_who_label()}</span>
                             </div>
                         </FadeIn>
 
@@ -131,7 +131,7 @@ function StatsSection() {
                                 whileHover={{ y: -4 }}
                                 transition={{ duration: 0.25, ease: smoothEase }}
                             >
-                                <div className="mb-4 whitespace-nowrap text-3xl font-bold leading-none text-accent sm:text-4xl md:text-5xl">
+                                <div className="mb-4 whitespace-nowrap text-3xl font-bold leading-none tabular-nums text-accent sm:text-4xl md:text-5xl">
                                     {stat.value}
                                 </div>
                                 <div className="w-full max-w-72 text-xs leading-snug text-text-muted uppercase tracking-widest sm:text-sm">

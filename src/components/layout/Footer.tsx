@@ -11,9 +11,12 @@ export function Footer() {
         <footer className="border-t border-bg-elevated bg-bg px-4 pb-24 pt-12 sm:px-6 sm:pb-28 sm:pt-20">
             <div className="mx-auto flex max-w-7xl flex-col items-center text-center">
                 {/* Large Decorative Name */}
-                <h2 className="pointer-events-none mb-6 select-none text-[12vw] font-bold leading-none text-bg-elevated sm:mb-10 sm:text-[10vw] uppercase">
+                <div
+                    className="pointer-events-none mb-6 select-none text-[12vw] font-bold uppercase leading-none text-bg-elevated sm:mb-10 sm:text-[10vw]"
+                    aria-hidden="true"
+                >
                     Jan Drlý
-                </h2>
+                </div>
 
                 {/* Social Links */}
                 <div className="flex flex-wrap justify-center gap-4 text-text-muted sm:gap-8">
@@ -32,7 +35,7 @@ export function Footer() {
                 </div>
 
                 {/* Copyright and Privacy */}
-                <div className="mt-8 flex flex-col-reverse items-center justify-center gap-4 text-xs text-[#444444] sm:mt-12 sm:gap-8 sm:text-sm md:flex-row">
+                <div className="mt-8 flex flex-col-reverse items-center justify-center gap-4 text-xs text-text-subtle sm:mt-12 sm:gap-8 sm:text-sm md:flex-row">
                     <p className="whitespace-nowrap">{m.footer_copyright({ year: currentYear })}</p>
                     <div className="flex gap-4 whitespace-nowrap">
                         <Link to={localizeHref('/privacy')} className="transition-colors hover:text-white">

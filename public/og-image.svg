@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title description">
+  <title id="title">Jan Drlý, full-stack developer</title>
+  <desc id="description">Jandrly portfolio social preview</desc>
+  <defs>
+    <radialGradient id="accentGlow" cx="0" cy="0" r="1" gradientTransform="translate(1020 40) rotate(136) scale(620 540)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ff6b50" stop-opacity="0.32" />
+      <stop offset="1" stop-color="#ff6b50" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="line" x1="96" y1="0" x2="1104" y2="0" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#ff6b50" />
+      <stop offset="1" stop-color="#ff6b50" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#050505" />
+  <rect width="1200" height="630" fill="url(#accentGlow)" />
+  <path d="M96 112H1104" stroke="url(#line)" stroke-width="2" />
+  <rect x="96" y="56" width="64" height="64" rx="18" fill="#ff6b50" />
+  <text x="128" y="99" fill="#050505" font-family="Satoshi, Arial, sans-serif" font-size="26" font-weight="900" text-anchor="middle">JD</text>
+  <text x="96" y="300" fill="#ffffff" font-family="Satoshi, Arial, sans-serif" font-size="94" font-weight="700" letter-spacing="-3">Jan Drlý</text>
+  <text x="96" y="376" fill="#b4b4b4" font-family="Satoshi, Arial, sans-serif" font-size="42" font-weight="500">Full-stack developer</text>
+  <text x="96" y="506" fill="#ff6b50" font-family="Satoshi, Arial, sans-serif" font-size="24" font-weight="700" letter-spacing="2">WEB · APPS · INTEGRATIONS</text>
+  <text x="1104" y="566" fill="#888888" font-family="Satoshi, Arial, sans-serif" font-size="24" font-weight="500" text-anchor="end">jandrly.cz</text>
+</svg>

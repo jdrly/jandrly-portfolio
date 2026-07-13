@@ -1,5 +1,5 @@
 import { m as motion } from 'framer-motion'
-import { AppWindow, Cpu, Globe, Server, Smartphone, Workflow, Wrench } from 'lucide-react'
+import { AppWindow, Globe, Server, Smartphone, Workflow, Wrench } from 'lucide-react'
 import { PageHero } from './PageHero'
 import { LetsTalkSection } from '@/components/sections'
 import { FadeIn, PageTransition, ScaleOnHover, SlideIn, StaggerContainer, StaggerItem, smoothEase } from '@/components/motion'
@@ -11,43 +11,31 @@ function useServices() {
             icon: AppWindow,
             title: m.service_webapp_title(),
             description: m.service_webapp_desc(),
-            tags: ['React', 'Next.js', 'Laravel', 'Nest.js', 'PostgreSQL'],
         },
         {
             icon: Server,
             title: m.service_backend_title(),
             description: m.service_backend_desc(),
-            tags: ['APIs', 'Laravel', 'Nest.js', 'PostgreSQL', 'HubSpot'],
         },
         {
             icon: Workflow,
             title: m.service_automation_title(),
             description: m.service_automation_desc(),
-            tags: ['Internal Tools', 'Workflows', 'Imports', 'Exports', 'Admin'],
         },
         {
             icon: Globe,
             title: m.service_frontend_title(),
             description: m.service_frontend_desc(),
-            tags: ['Next.js', 'PayloadCMS', 'React', 'Vue.js', 'CMS'],
         },
         {
             icon: Smartphone,
             title: m.service_mobile_title(),
             description: m.service_mobile_desc(),
-            tags: ['iOS', 'macOS', 'Apps', 'APIs', 'Backend'],
         },
         {
             icon: Wrench,
             title: m.service_strategy_title(),
             description: m.service_strategy_desc(),
-            tags: ['Architecture', 'Code Review', 'Planning', 'Handover'],
-        },
-        {
-            icon: Cpu,
-            title: m.service_hardware_title(),
-            description: m.service_hardware_desc(),
-            tags: ['IT Setup', 'Hardware', 'Consulting'],
         },
     ]
 }
@@ -90,10 +78,9 @@ interface ServiceCardProps {
     icon: React.ComponentType<{ size?: number }>
     title: string
     description: string
-    tags: Array<string>
 }
 
-function ServiceCard({ icon: Icon, title, description, tags }: ServiceCardProps) {
+function ServiceCard({ icon: Icon, title, description }: ServiceCardProps) {
     return (
         <ScaleOnHover scale={1.01}>
             <motion.div
@@ -108,28 +95,17 @@ function ServiceCard({ icon: Icon, title, description, tags }: ServiceCardProps)
 
                 <div className="relative z-10">
                     <motion.div
-                        className="mb-8 flex h-14 w-14 items-center justify-center rounded-2xl border border-border bg-bg-elevated transition-all duration-300 group-hover:border-accent group-hover:text-accent"
-                        aria-label={`${title} icon`}
+                        className="mb-8 flex h-14 w-14 items-center justify-center rounded-2xl border border-border bg-bg-elevated transition-[border-color,color,transform] duration-300 group-hover:border-accent group-hover:text-accent"
+                        aria-hidden="true"
                         whileHover={{ scale: 1.1, rotate: 5 }}
                         transition={{ duration: 0.3, ease: smoothEase }}
                     >
-                        <Icon size={28} />
+                        <Icon size={28} aria-hidden="true" />
                     </motion.div>
 
                     <h3 className="mb-4 text-2xl font-bold md:text-3xl">{title}</h3>
 
-                    <p className="mb-8 leading-relaxed text-text-muted">{description}</p>
-
-                    <div className="flex flex-wrap gap-2">
-                        {tags.map((tag) => (
-                            <span
-                                key={tag}
-                                className="rounded-full border border-border bg-bg-elevated px-3 py-1.5 text-xs font-medium text-[#aaaaaa]"
-                            >
-                                {tag}
-                            </span>
-                        ))}
-                    </div>
+                    <p className="leading-relaxed text-text-muted">{description}</p>
                 </div>
             </motion.div>
         </ScaleOnHover>
@@ -140,11 +116,14 @@ function ServicesGrid() {
     const services = useServices()
 
     return (
-        <section aria-label="Services offered" className="px-4 py-16 sm:px-6 sm:py-24">
+        <section aria-labelledby="services-grid-heading" className="px-4 py-16 sm:px-6 sm:py-24">
+            <h2 id="services-grid-heading" className="sr-only">
+                {m.services_grid_heading()}
+            </h2>
             <StaggerContainer staggerDelay={0.15} className="mx-auto grid max-w-7xl grid-cols-1 gap-6 md:grid-cols-2">
                 {services.map((service) => (
                     <StaggerItem key={service.title}>
-                        <ServiceCard icon={service.icon} title={service.title} description={service.description} tags={service.tags} />
+                        <ServiceCard icon={service.icon} title={service.title} description={service.description} />
                     </StaggerItem>
                 ))}
             </StaggerContainer>
@@ -168,7 +147,7 @@ function ProcessStep({ number, title, description, isLast = false, index }: Proc
                 whileHover={{ x: 10 }}
                 transition={{ duration: 0.3, ease: smoothEase }}
             >
-                <span className="font-mono text-4xl font-bold text-border-subtle transition-colors duration-500 group-hover:text-accent md:text-6xl">
+                <span className="font-mono text-4xl font-bold tabular-nums text-border-subtle transition-colors duration-500 group-hover:text-accent md:text-6xl">
                     {number}
                 </span>
 
@@ -185,7 +164,7 @@ function ProcessSection() {
     const processSteps = useProcessSteps()
 
     return (
-        <section aria-label="Work process" className="bg-[#0a0a0a] px-4 py-16 sm:px-6 sm:py-24 lg:py-32">
+        <section aria-labelledby="process-heading" className="bg-[#0a0a0a] px-4 py-16 sm:px-6 sm:py-24 lg:py-32">
             <div className="mx-auto max-w-5xl">
                 <div className="mb-16">
                     <FadeIn>
@@ -196,7 +175,7 @@ function ProcessSection() {
                     </FadeIn>
 
                     <FadeIn delay={0.1}>
-                        <h2 className="mb-6 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl">
+                        <h2 id="process-heading" className="mb-6 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl">
                             {m.process_heading()}
                         </h2>
                     </FadeIn>

@@ -14,6 +14,31 @@ const config = defineConfig({
         port: 4000,
         strictPort: true,
     },
+    build: {
+        rolldownOptions: {
+            output: {
+                codeSplitting: {
+                    groups: [
+                        {
+                            name: 'react',
+                            test: /node_modules[\\/](?:react|react-dom|scheduler)[\\/]/,
+                            priority: 30,
+                        },
+                        {
+                            name: 'tanstack',
+                            test: /node_modules[\\/]@tanstack[\\/]/,
+                            priority: 20,
+                        },
+                        {
+                            name: 'motion',
+                            test: /node_modules[\\/](?:framer-motion|motion-dom|motion-utils)[\\/]/,
+                            priority: 10,
+                        },
+                    ],
+                },
+            },
+        },
+    },
     resolve: {
         alias: {
             '@': fileURLToPath(new URL('./src', import.meta.url)),

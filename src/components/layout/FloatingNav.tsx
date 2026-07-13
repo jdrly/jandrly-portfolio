@@ -12,9 +12,9 @@ interface NavItem {
 
 function useNavItems(): Array<NavItem> {
     return [
-        { labelKey: m.nav_home, to: '/', icon: <LayoutGrid size={20} /> },
-        { labelKey: m.nav_about, to: '/about', icon: <User size={20} /> },
-        { labelKey: m.nav_services, to: '/services', icon: <Box size={20} /> },
+        { labelKey: m.nav_home, to: '/', icon: <LayoutGrid size={20} aria-hidden="true" /> },
+        { labelKey: m.nav_about, to: '/about', icon: <User size={20} aria-hidden="true" /> },
+        { labelKey: m.nav_services, to: '/services', icon: <Box size={20} aria-hidden="true" /> },
     ]
 }
 
@@ -29,11 +29,15 @@ export function FloatingNav() {
                     <Link
                         key={item.to}
                         to={localizeHref(item.to)}
+                        aria-label={item.labelKey()}
                         className="group relative rounded-full p-2 text-white transition-colors hover:bg-bg-elevated sm:p-3"
                     >
                         {item.icon}
                         {/* Tooltip - hidden on mobile */}
-                        <span className="pointer-events-none absolute -top-10 left-1/2 hidden -translate-x-1/2 whitespace-nowrap rounded-full bg-bg-elevated px-3 py-1 text-xs opacity-0 transition-opacity group-hover:opacity-100 sm:block">
+                        <span
+                            className="pointer-events-none absolute -top-10 left-1/2 hidden -translate-x-1/2 whitespace-nowrap rounded-full bg-bg-elevated px-3 py-1 text-xs opacity-0 transition-opacity group-hover:opacity-100 sm:block"
+                            aria-hidden="true"
+                        >
                             {item.labelKey()}
                         </span>
                     </Link>

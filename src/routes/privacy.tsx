@@ -1,30 +1,23 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { PageHero } from '@/components/pages/PageHero'
 import { PageTransition } from '@/components/motion'
+import { createSeoHead } from '@/lib/seo'
 import * as m from '@/paraglide/messages'
 
 export const Route = createFileRoute('/privacy')({
-    head: () => ({
-        meta: [
-            { title: m.meta_privacy_title() },
-            {
-                name: 'description',
-                content: m.meta_privacy_description(),
-            },
-            { property: 'og:title', content: m.meta_privacy_title() },
-            {
-                property: 'og:description',
-                content: m.meta_privacy_description(),
-            },
-        ],
-    }),
+    head: () =>
+        createSeoHead({
+            title: m.meta_privacy_title(),
+            description: m.meta_privacy_description(),
+            path: '/privacy',
+        }),
     component: PrivacyPage,
 })
 
 function PrivacyPage() {
     return (
         <PageTransition>
-            <main>
+            <div>
                 <PageHero label={m.privacy_label()} titleId="privacy-heading" metaText={m.privacy_last_updated()}>
                     {m.privacy_heading()}
                 </PageHero>
@@ -56,7 +49,7 @@ function PrivacyPage() {
                         </div>
                     </article>
                 </section>
-            </main>
+            </div>
         </PageTransition>
     )
 }

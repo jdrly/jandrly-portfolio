@@ -4,7 +4,7 @@ import { tanstackConfig } from '@tanstack/eslint-config'
 
 export default [
     {
-        ignores: ['.cursor/**', '.output/**', 'src/paraglide/**'],
+        ignores: ['.agents/**', '.cursor/**', '.output/**', '.vercel/**', 'src/paraglide/**'],
     },
     ...tanstackConfig,
 ]

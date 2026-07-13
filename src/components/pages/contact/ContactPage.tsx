@@ -67,7 +67,7 @@ function ContactInfo() {
                             href="tel:+420735190454"
                             icon={<Phone size={24} />}
                             label={m.contact_label_phone()}
-                            value="+420 735 190 454"
+                            value="+420 735 190 454"
                             hasSeparator
                         />
                     </StaggerItem>
@@ -103,6 +103,7 @@ function ContactCard({ href, icon, label, value, hasSeparator = false }: Contact
                 className="flex h-12 w-12 shrink-0 items-center justify-center text-text-subtle transition-colors group-hover:text-accent"
                 whileHover={{ scale: 1.1 }}
                 transition={{ duration: 0.2, ease: smoothEase }}
+                aria-hidden="true"
             >
                 {icon}
             </motion.div>

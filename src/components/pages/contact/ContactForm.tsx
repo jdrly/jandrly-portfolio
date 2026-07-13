@@ -1,7 +1,7 @@
 import { useForm } from '@tanstack/react-form'
 import { useServerFn } from '@tanstack/react-start'
 import { AnimatePresence, m as motion } from 'framer-motion'
-import { AlertCircle, CheckCircle2, Send } from 'lucide-react'
+import { AlertCircle, ArrowRight, CheckCircle2, Mail, Send } from 'lucide-react'
 import { useState } from 'react'
 import { z } from 'zod'
 import { sendContactMessage } from './sendContactMessage'
@@ -47,7 +47,7 @@ function getErrorMessage(error: unknown) {
         return error.message
     }
 
-    return 'Invalid value'
+    return m.contact_validation_invalid_value()
 }
 
 function FieldError({ field }: FieldErrorProps) {
@@ -64,8 +64,9 @@ function FieldError({ field }: FieldErrorProps) {
                     exit={{ opacity: 0, y: -5 }}
                     transition={{ duration: 0.2, ease: smoothEase }}
                     className="flex items-center gap-1 text-sm text-red-400"
+                    role="alert"
                 >
-                    <AlertCircle size={14} />
+                    <AlertCircle size={14} aria-hidden="true" />
                     {displayMessage}
                 </motion.span>
             )}
@@ -75,12 +76,7 @@ function FieldError({ field }: FieldErrorProps) {
 
 type SubmitStatus = 'success' | 'configuration_error' | 'verification_error' | 'send_error' | null
 
-interface SubmitFeedbackProps {
-    status: SubmitStatus
-    isTurnstileConfigured: boolean
-}
-
-function SubmitFeedback({ status, isTurnstileConfigured }: SubmitFeedbackProps) {
+function SubmitFeedback({ status }: { status: SubmitStatus }) {
     return (
         <AnimatePresence>
             {status === 'success' && (
@@ -89,8 +85,9 @@ function SubmitFeedback({ status, isTurnstileConfigured }: SubmitFeedbackProps) 
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     className="flex items-start gap-2 rounded-lg border border-green-500/30 bg-green-500/10 p-4 text-sm text-green-400"
+                    role="status"
                 >
-                    <CheckCircle2 size={18} className="mt-0.5 shrink-0" />
+                    <CheckCircle2 size={18} className="mt-0.5 shrink-0" aria-hidden="true" />
                     <span>
                         <strong className="block">{m.contact_form_success_title()}</strong>
                         {m.contact_form_success_text()}
@@ -98,14 +95,15 @@ function SubmitFeedback({ status, isTurnstileConfigured }: SubmitFeedbackProps) 
                 </motion.div>
             )}
 
-            {(status === 'configuration_error' || !isTurnstileConfigured) && (
+            {status === 'configuration_error' && (
                 <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     className="flex items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-400"
+                    role="alert"
                 >
-                    <AlertCircle size={18} />
+                    <AlertCircle size={18} aria-hidden="true" />
                     {m.contact_form_error_not_configured()}
                 </motion.div>
             )}
@@ -116,8 +114,9 @@ function SubmitFeedback({ status, isTurnstileConfigured }: SubmitFeedbackProps) 
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     className="flex items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-400"
+                    role="alert"
                 >
-                    <AlertCircle size={18} />
+                    <AlertCircle size={18} aria-hidden="true" />
                     {m.contact_form_error_network()}
                 </motion.div>
             )}
@@ -128,8 +127,9 @@ function SubmitFeedback({ status, isTurnstileConfigured }: SubmitFeedbackProps) 
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     className="flex items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-400"
+                    role="alert"
                 >
-                    <AlertCircle size={18} />
+                    <AlertCircle size={18} aria-hidden="true" />
                     {m.contact_form_error_verification()}
                 </motion.div>
             )}
@@ -137,11 +137,46 @@ function SubmitFeedback({ status, isTurnstileConfigured }: SubmitFeedbackProps) 
     )
 }
 
+function DirectContactCard() {
+    return (
+        <FadeIn direction="right" delay={0.2}>
+            <div className="relative overflow-hidden rounded-3xl border border-border-subtle bg-[#0d0d0d] p-7 shadow-2xl shadow-black/50 sm:p-10 md:p-12">
+                <div
+                    className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,107,80,0.12),transparent_55%)]"
+                    aria-hidden="true"
+                />
+                <div className="relative">
+                    <div className="mb-8 flex h-14 w-14 items-center justify-center rounded-2xl border border-border bg-bg-elevated text-accent">
+                        <Mail size={26} aria-hidden="true" />
+                    </div>
+                    <p className="mb-4 text-xs font-bold uppercase tracking-[0.18em] text-accent">{m.contact_direct_label()}</p>
+                    <h2 className="mb-5 text-3xl font-bold tracking-tight text-white sm:text-4xl">{m.contact_direct_heading()}</h2>
+                    <p className="mb-8 max-w-md text-base leading-relaxed text-text-muted sm:text-lg">{m.contact_direct_text()}</p>
+                    <a
+                        href="mailto:jd@jandrly.cz"
+                        className="group inline-flex items-center justify-center gap-2 rounded-full bg-accent px-6 py-3.5 text-sm font-bold text-black transition-colors hover:bg-accent-hover"
+                    >
+                        {m.contact_direct_button()}
+                        <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" aria-hidden="true" />
+                    </a>
+                </div>
+            </div>
+        </FadeIn>
+    )
+}
+
 export function ContactForm() {
+    if (!TURNSTILE_SITE_KEY) {
+        return <DirectContactCard />
+    }
+
+    return <ConfiguredContactForm />
+}
+
+function ConfiguredContactForm() {
     const sendContactMessageFn = useServerFn(sendContactMessage)
     const [submitStatus, setSubmitStatus] = useState<SubmitStatus>(null)
     const [turnstileResetSignal, setTurnstileResetSignal] = useState(0)
-    const isTurnstileConfigured = Boolean(TURNSTILE_SITE_KEY)
 
     const form = useForm({
         defaultValues: {
@@ -193,7 +228,7 @@ export function ContactForm() {
                 <form className="space-y-6 p-6 sm:p-8 md:p-12" action={handleFormAction}>
                     <h2 className="text-xl font-bold sm:text-2xl">{m.contact_form_heading()}</h2>
 
-                    <SubmitFeedback status={submitStatus} isTurnstileConfigured={isTurnstileConfigured} />
+                    <SubmitFeedback status={submitStatus} />
 
                     <form.Field name="website">
                         {(field) => (
@@ -227,13 +262,14 @@ export function ContactForm() {
                                     type="text"
                                     id={field.name}
                                     name={field.name}
+                                    autoComplete="name"
                                     value={field.state.value}
                                     onChange={(e) => {
                                         setSubmitStatus(null)
                                         field.handleChange(e.target.value)
                                     }}
                                     onBlur={field.handleBlur}
-                                    className={`w-full rounded-xl border bg-[#0a0a0a] px-4 py-4 text-white transition-colors focus:border-accent focus:outline-none ${
+                                    className={`w-full rounded-xl border bg-[#0a0a0a] px-4 py-4 text-white transition-colors focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0a] ${
                                         field.state.meta.isTouched && field.state.meta.errors.length > 0
                                             ? 'border-red-500'
                                             : 'border-border'
@@ -262,13 +298,15 @@ export function ContactForm() {
                                     type="email"
                                     id={field.name}
                                     name={field.name}
+                                    autoComplete="email"
+                                    spellCheck={false}
                                     value={field.state.value}
                                     onChange={(e) => {
                                         setSubmitStatus(null)
                                         field.handleChange(e.target.value)
                                     }}
                                     onBlur={field.handleBlur}
-                                    className={`w-full rounded-xl border bg-[#0a0a0a] px-4 py-4 text-white transition-colors focus:border-accent focus:outline-none ${
+                                    className={`w-full rounded-xl border bg-[#0a0a0a] px-4 py-4 text-white transition-colors focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0a] ${
                                         field.state.meta.isTouched && field.state.meta.errors.length > 0
                                             ? 'border-red-500'
                                             : 'border-border'
@@ -297,13 +335,15 @@ export function ContactForm() {
                                     type="tel"
                                     id={field.name}
                                     name={field.name}
+                                    autoComplete="tel"
+                                    inputMode="tel"
                                     value={field.state.value}
                                     onChange={(e) => {
                                         setSubmitStatus(null)
                                         field.handleChange(e.target.value)
                                     }}
                                     onBlur={field.handleBlur}
-                                    className={`w-full rounded-xl border bg-[#0a0a0a] px-4 py-4 text-white transition-colors focus:border-accent focus:outline-none ${
+                                    className={`w-full rounded-xl border bg-[#0a0a0a] px-4 py-4 text-white transition-colors focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0a] ${
                                         field.state.meta.isTouched && field.state.meta.errors.length > 0
                                             ? 'border-red-500'
                                             : 'border-border'
@@ -338,7 +378,7 @@ export function ContactForm() {
                                         field.handleChange(e.target.value)
                                     }}
                                     onBlur={field.handleBlur}
-                                    className={`w-full resize-none rounded-xl border bg-[#0a0a0a] px-4 py-4 text-white transition-colors focus:border-accent focus:outline-none ${
+                                    className={`w-full resize-none rounded-xl border bg-[#0a0a0a] px-4 py-4 text-white transition-colors focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0a] ${
                                         field.state.meta.isTouched && field.state.meta.errors.length > 0
                                             ? 'border-red-500'
                                             : 'border-border'
@@ -369,8 +409,8 @@ export function ContactForm() {
                         {([canSubmit, isSubmitting, turnstileToken]) => (
                             <motion.button
                                 type="submit"
-                                disabled={!canSubmit || isSubmitting || !turnstileToken || !isTurnstileConfigured}
-                                className="flex w-full items-center justify-center gap-2 rounded-xl bg-white py-4 font-bold text-black transition-all hover:bg-accent hover:text-white disabled:cursor-not-allowed disabled:opacity-70"
+                                disabled={!canSubmit || isSubmitting || !turnstileToken}
+                                className="flex w-full items-center justify-center gap-2 rounded-xl bg-white py-4 font-bold text-black transition-colors hover:bg-accent hover:text-white disabled:cursor-not-allowed disabled:opacity-70"
                                 whileHover={{ scale: canSubmit && !isSubmitting ? 1.02 : 1 }}
                                 whileTap={{ scale: canSubmit && !isSubmitting ? 0.98 : 1 }}
                                 transition={{ duration: 0.2, ease: smoothEase }}
@@ -380,11 +420,11 @@ export function ContactForm() {
                                         className="h-5 w-5 rounded-full border-2 border-current border-t-transparent"
                                         animate={{ rotate: 360 }}
                                         transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                                        aria-label="Submitting..."
+                                        aria-label={m.contact_form_submitting()}
                                     />
                                 ) : (
                                     <>
-                                        {m.contact_form_submit()} <Send size={18} />
+                                        {m.contact_form_submit()} <Send size={18} aria-hidden="true" />
                                     </>
                                 )}
                             </motion.button>

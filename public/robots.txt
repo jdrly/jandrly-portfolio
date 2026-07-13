@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://jandrly.cz/sitemap.xml
+Sitemap: https://www.jandrly.cz/sitemap.xml

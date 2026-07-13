@@ -35,7 +35,7 @@ function Hero() {
     return (
         <section
             ref={sectionRef}
-            aria-label="Hero introduction"
+            aria-labelledby="home-heading"
             className="relative flex h-screen w-full flex-col items-center justify-center overflow-hidden"
         >
             <motion.div
@@ -43,15 +43,15 @@ function Hero() {
                 className="relative z-10 flex min-h-[20vw] max-w-6xl flex-col items-center justify-center px-4 sm:min-h-[15vw] sm:px-6"
             >
                 <motion.h1
+                    id="home-heading"
+                    aria-label={m.hero_heading_aria()}
                     initial={{ y: 50, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}
                     transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
                     className="flex items-center text-center text-[15vw] font-semibold leading-none tracking-tight text-white sm:text-[13vw] md:text-[12vw] lg:text-[10vw]"
                 >
                     <span>/</span>
-                    <span aria-live="polite" aria-atomic="true">
-                        {displayText}
-                    </span>
+                    <span aria-hidden="true">{displayText}</span>
                     <motion.span
                         animate={isInView ? { opacity: [0, 1, 0] } : { opacity: 0 }}
                         transition={isInView ? { duration: 0.8, repeat: Infinity } : { duration: 0.2 }}
@@ -92,7 +92,6 @@ function Hero() {
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.5, duration: 0.8 }}
                 className="absolute bottom-8 left-8 z-20 hidden items-center gap-4 md:flex"
-                aria-label="Availability status"
                 role="status"
             >
                 <div className="flex items-center gap-2 rounded-full border border-border bg-bg-card/80 px-4 py-2 backdrop-blur-sm">
@@ -107,11 +106,7 @@ function Hero() {
                 transition={{ delay: 0.5, duration: 0.8 }}
                 className="absolute bottom-8 right-8 z-20 hidden flex-col items-end gap-1 md:flex"
             >
-                <a
-                    href="mailto:jd@jandrly.cz"
-                    className="font-medium text-white transition-colors hover:text-accent"
-                    aria-label="Send email to jd@jandrly.cz"
-                >
+                <a href="mailto:jd@jandrly.cz" className="font-medium text-white transition-colors hover:text-accent">
                     jd@jandrly.cz
                 </a>
                 <div className="h-0.5 w-8 bg-white" aria-hidden="true" />
@@ -120,7 +115,7 @@ function Hero() {
     )
 }
 
-function useServices() {
+function useFeaturedServices() {
     return [
         {
             title: m.service_webapp_title(),
@@ -142,38 +137,26 @@ function useServices() {
             description: m.service_frontend_desc(),
             tag: m.service_frontend_tag(),
         },
-        {
-            title: m.service_mobile_title(),
-            description: m.service_mobile_desc(),
-            tag: m.service_mobile_tag(),
-        },
-        {
-            title: m.service_strategy_title(),
-            description: m.service_strategy_desc(),
-            tag: m.service_strategy_tag(),
-        },
-        {
-            title: m.service_hardware_title(),
-            description: m.service_hardware_desc(),
-            tag: m.service_hardware_tag(),
-        },
     ]
 }
 
 function BenefitsSection() {
-    const services = useServices()
+    const services = useFeaturedServices()
 
     return (
-        <section aria-label="Services offered" className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 md:px-12 lg:py-32">
+        <section aria-labelledby="services-overview-heading" className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-24 md:px-12 lg:py-32">
             <FadeIn delay={0}>
                 <div className="mb-8 flex items-center gap-3">
                     <div className="h-1.5 w-1.5 rounded-full bg-accent" />
-                    <span className="text-xs font-bold uppercase tracking-[0.2em] text-text-subtle">{m.benefits_label()}</span>
+                    <span className="text-xs font-bold uppercase tracking-[0.18em] text-text-subtle">{m.benefits_label()}</span>
                 </div>
             </FadeIn>
 
             <FadeIn delay={0.1}>
-                <h2 className="mb-12 max-w-5xl text-2xl font-medium leading-[1.1] tracking-tight text-white sm:mb-16 sm:text-4xl md:mb-24 md:text-6xl lg:text-7xl">
+                <h2
+                    id="services-overview-heading"
+                    className="mb-12 max-w-5xl text-balance text-2xl font-medium leading-[1.1] tracking-tight text-white sm:mb-16 sm:text-4xl md:mb-24 md:text-6xl lg:text-7xl"
+                >
                     {m.benefits_heading()}
                 </h2>
             </FadeIn>
@@ -187,7 +170,7 @@ function BenefitsSection() {
                             transition={{ duration: 0.25, ease: smoothEase }}
                         >
                             <div className="mb-4 flex items-start justify-between sm:mb-6">
-                                <span className="translate-y-2 transform text-xs font-bold uppercase tracking-widest text-accent opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100">
+                                <span className="text-xs font-bold uppercase tracking-widest text-accent transition-[transform,opacity] duration-300 group-hover:translate-x-1">
                                     {item.tag}
                                 </span>
                                 <span className="font-mono text-sm text-border">0{index + 1}</span>

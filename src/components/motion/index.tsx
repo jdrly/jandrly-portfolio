@@ -188,14 +188,14 @@ function SlideIn({ children, direction = 'left', delay = 0, duration = 0.6, dist
 // ============================================================================
 // PageTransition Component (wraps page content with enter animation)
 // ============================================================================
-interface PageTransitionProps extends Omit<HTMLMotionProps<'main'>, 'initial' | 'animate'> {
+interface PageTransitionProps extends Omit<HTMLMotionProps<'div'>, 'initial' | 'animate'> {
     children: ReactNode
     className?: string
 }
 
 function PageTransition({ children, className, ...props }: PageTransitionProps) {
     return (
-        <motion.main
+        <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: smoothEase }}
@@ -203,7 +203,7 @@ function PageTransition({ children, className, ...props }: PageTransitionProps) 
             {...props}
         >
             {children}
-        </motion.main>
+        </motion.div>
     )
 }
 

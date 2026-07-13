@@ -14,6 +14,7 @@ function useNavLinks(): Array<NavLink> {
     return [
         { labelKey: m.nav_about, to: '/about' },
         { labelKey: m.nav_services, to: '/services' },
+        { labelKey: m.nav_work, to: '/#work' },
         { labelKey: m.nav_contact, to: '/contact' },
     ]
 }
@@ -41,7 +42,7 @@ export function Navbar() {
     return (
         <nav
             className={cn(
-                'fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-6 text-white text-sm font-medium transition-all duration-300',
+                'fixed left-0 right-0 top-0 z-40 flex items-center justify-between px-6 text-sm font-medium text-white transition-[padding,background-color,box-shadow,backdrop-filter] duration-300',
                 isScrolled ? 'bg-bg/90 backdrop-blur-md py-4 shadow-lg' : 'py-6',
             )}
         >
@@ -49,6 +50,7 @@ export function Navbar() {
                 {/* Logo */}
                 <Link
                     to={localizeHref('/')}
+                    aria-label={`Jan Drlý · ${m.nav_home()}`}
                     className="flex h-8 w-8 items-center justify-center rounded bg-white text-lg font-bold text-black"
                 >
                     JD

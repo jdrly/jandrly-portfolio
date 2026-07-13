@@ -29,6 +29,8 @@ export function RootDocument({ children }: { children: ReactNode }) {
     return (
         <html lang={locale}>
             <head>
+                <link rel="preload" href="/fonts/Satoshi-Variable.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+                <meta name="theme-color" content="#050505" />
                 <HeadContent />
             </head>
             <body>

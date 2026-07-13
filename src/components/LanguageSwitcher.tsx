@@ -44,10 +44,10 @@ export function LanguageSwitcher() {
         <a
             href={targetPath}
             onClick={() => handleLanguageSwitch(targetLocale)}
-            className="group relative flex items-center gap-2 rounded-full border border-border bg-bg-card/80 px-3 py-2 text-sm font-medium text-white backdrop-blur-sm transition-all hover:border-accent hover:bg-bg-elevated"
+            className="group relative flex items-center gap-2 rounded-full border border-border bg-bg-card/80 px-3 py-2 text-sm font-medium text-white backdrop-blur-sm transition-[border-color,background-color] hover:border-accent hover:bg-bg-elevated"
             aria-label={m.language_switcher_label()}
         >
-            <Globe size={16} className="text-text-muted group-hover:text-accent" />
+            <Globe size={16} className="text-text-muted group-hover:text-accent" aria-hidden="true" />
             <span className="uppercase">{currentLocale}</span>
         </a>
     )
@@ -67,8 +67,11 @@ export function LanguageSwitcherMinimal() {
             className="group relative rounded-full p-2 text-white transition-colors hover:bg-bg-elevated sm:p-3"
             aria-label={m.language_switcher_label()}
         >
-            <Globe size={20} />
-            <span className="pointer-events-none absolute -top-10 left-1/2 hidden -translate-x-1/2 whitespace-nowrap rounded-full bg-bg-elevated px-3 py-1 text-xs opacity-0 transition-opacity group-hover:opacity-100 sm:block">
+            <Globe size={20} aria-hidden="true" />
+            <span
+                className="pointer-events-none absolute -top-10 left-1/2 hidden -translate-x-1/2 whitespace-nowrap rounded-full bg-bg-elevated px-3 py-1 text-xs opacity-0 transition-opacity group-hover:opacity-100 sm:block"
+                aria-hidden="true"
+            >
                 {currentLocale === 'cs' ? m.lang_en() : m.lang_cs()}
             </span>
         </a>
