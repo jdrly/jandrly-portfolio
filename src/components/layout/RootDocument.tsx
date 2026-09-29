@@ -1,8 +1,7 @@
-import { HeadContent, Scripts } from '@tanstack/react-router'
+import { Suspense, lazy } from 'react'
+import { ClientOnly, HeadContent, Scripts } from '@tanstack/react-router'
 import { TanStackDevtools } from '@tanstack/react-devtools'
-import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
-import { Analytics } from '@vercel/analytics/react'
 import type { ReactNode } from 'react'
 
 import { getLocale } from '@/paraglide/runtime'
@@ -17,11 +16,13 @@ const devtoolsPlugins = [
         name: 'Tanstack Router',
         render: <TanStackRouterDevtoolsPanel />,
     },
-    {
-        name: 'Tanstack Query',
-        render: <ReactQueryDevtoolsPanel />,
-    },
 ]
+
+// Analytics is non-critical: keep it out of the initial bundle and load it only after hydration.
+const Analytics = lazy(() => import('@vercel/analytics/react').then((mod) => ({ default: mod.Analytics })))
+
+/** Set by vite.config.ts on Vercel builds only; the analytics script exists only on Vercel deployments. */
+const ANALYTICS_ENABLED = import.meta.env.VITE_VERCEL_ANALYTICS === 'true'
 
 export function RootDocument({ children }: { children: ReactNode }) {
     const locale = getLocale()
@@ -29,13 +30,17 @@ export function RootDocument({ children }: { children: ReactNode }) {
     return (
         <html lang={locale}>
             <head>
-                <link rel="preload" href="/fonts/Satoshi-Variable.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
-                <meta name="theme-color" content="#050505" />
                 <HeadContent />
             </head>
             <body>
                 {children}
-                <Analytics />
+                {ANALYTICS_ENABLED ? (
+                    <ClientOnly>
+                        <Suspense fallback={null}>
+                            <Analytics />
+                        </Suspense>
+                    </ClientOnly>
+                ) : null}
                 <TanStackDevtools config={devtoolsConfig} plugins={devtoolsPlugins} />
                 <Scripts />
             </body>
