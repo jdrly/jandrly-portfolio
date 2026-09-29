@@ -1,0 +1,53 @@
+# After every successful Vercel *production* deployment, ping IndexNow (Bing, Seznam, Yandex, Naver, …) with
+# every URL of the live sitemap. Free, no account, no secret: the key is the public file public/<key>.txt.
+#
+# Vercel's GitHub integration reports each deployment to GitHub as a Deployment + DeploymentStatus. Production
+# deployments carry `production_environment: true` and an environment named "Production" (or
+# "Production – <project>"); previews are "Preview…" with `production_environment: false`, so the job condition
+# below never matches a preview. Google does not use IndexNow; it reads the sitemap on its own.
+name: IndexNow
+
+on:
+    deployment_status:
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+concurrency:
+    group: indexnow
+    cancel-in-progress: false
+
+jobs:
+    submit:
+        if: >-
+            github.event_name == 'workflow_dispatch' ||
+            (github.event.deployment_status.state == 'success' &&
+             github.event.deployment.production_environment == true &&
+             startsWith(github.event.deployment.environment, 'Production'))
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+        env:
+            SITE: https://www.jandrly.cz
+        steps:
+            - uses: actions/checkout@v5
+              with:
+                  # The commit that was deployed (the key file must match what is live).
+                  ref: ${{ github.event.deployment.sha || github.sha }}
+
+            - uses: actions/setup-node@v5
+              with:
+                  node-version: 24
+
+            - name: Wait until the production domain serves this deployment's key file
+              run: |
+                  key_file=$(find public -maxdepth 1 -regex '.*/[0-9a-f]\{32\}\.txt' -exec basename {} \;)
+                  for _ in $(seq 1 20); do
+                    if [ "$(curl -fsS "$SITE/$key_file" || true)" = "${key_file%.txt}" ]; then exit 0; fi
+                    sleep 15
+                  done
+                  echo "$SITE/$key_file is not served" >&2
+                  exit 1
+
+            # Same as `pnpm seo:indexnow`; the script has no dependencies, so no install is needed.
+            - run: node scripts/indexnow.mjs --base "$SITE"
