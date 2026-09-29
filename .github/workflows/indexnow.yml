@@ -2,9 +2,9 @@
 # every URL of the live sitemap. Free, no account, no secret: the key is the public file public/<key>.txt.
 #
 # Vercel's GitHub integration reports each deployment to GitHub as a Deployment + DeploymentStatus. Production
-# deployments carry `production_environment: true` and an environment named "Production" (or
-# "Production – <project>"); previews are "Preview…" with `production_environment: false`, so the job condition
-# below never matches a preview. Google does not use IndexNow; it reads the sitemap on its own.
+# deployments use an environment named "Production" (or "Production – <project>"), previews "Preview…", so the job
+# condition below never matches a preview. Vercel sends `production_environment: false` for both, so that flag
+# can't be used. Google does not use IndexNow; it reads the sitemap on its own.
 name: IndexNow
 
 on:
@@ -23,7 +23,6 @@ jobs:
         if: >-
             github.event_name == 'workflow_dispatch' ||
             (github.event.deployment_status.state == 'success' &&
-             github.event.deployment.production_environment == true &&
              startsWith(github.event.deployment.environment, 'Production'))
         runs-on: ubuntu-latest
         timeout-minutes: 10
