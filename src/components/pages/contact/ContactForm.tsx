@@ -1,39 +1,31 @@
-import { useForm } from '@tanstack/react-form'
-import { useServerFn } from '@tanstack/react-start'
-import { AnimatePresence, m as motion } from 'framer-motion'
-import { AlertCircle, ArrowRight, CheckCircle2, Mail, Send } from 'lucide-react'
-import { useState } from 'react'
-import { z } from 'zod'
-import { sendContactMessage } from './sendContactMessage'
+import { CircleAlert, CircleCheck } from 'lucide-react'
 import { TurnstileWidget } from './TurnstileWidget'
-import { FadeIn, smoothEase } from '@/components/motion'
+import { CONTACT_FIELD_VALIDATORS, IS_CONTACT_FORM_CONFIGURED, useContactForm } from './useContactForm'
+import type { ChangeEvent, ReactNode } from 'react'
+import type { ContactFieldName, ContactFormApi, SubmitStatus } from './useContactForm'
+import type { FormFieldProps } from '@/components/ui/FormField'
+import type { GlyphId } from '@/components/ui/GlyphWord'
+import { useProtectedEmail } from '@/components/ProtectedEmail'
+import { ButtonLink } from '@/components/ui/Button'
+import { Eyebrow } from '@/components/ui/Eyebrow'
+import { FormField } from '@/components/ui/FormField'
+import { GlyphWord } from '@/components/ui/GlyphWord'
+import { SubmitButton } from '@/components/ui/SubmitButton'
+import { keepHyphenatedWords } from '@/lib/typography'
+import { cn } from '@/lib/utils'
+import { HONEYPOT_FIELD } from '@/server/contact/rules'
 import * as m from '@/paraglide/messages'
 
-const TURNSTILE_SITE_KEY = import.meta.env.VITE_TURNSTILE_SITE_KEY || ''
+const WINDOW_GLYPHS: ReadonlyArray<GlyphId> = [2, 13, 11, 10]
 
-function createNameSchema() {
-    return z.string().min(2, m.contact_validation_name_min())
-}
+const WINDOW_TITLE_CLASS =
+    'font-display text-[clamp(1.875rem,0.5714vw+1.7357rem,2.25rem)] leading-[1.08] font-black tracking-[-0.028em] text-paper'
 
-function createEmailSchema() {
-    return z.email(m.contact_validation_email_invalid())
-}
-
-function createPhoneSchema() {
-    return z.string().refine((val) => val === '' || /^[+\d\s-]*$/.test(val), m.contact_validation_phone_invalid())
-}
-
-function createMessageSchema() {
-    return z.string().min(10, m.contact_validation_message_min())
-}
-
-interface FieldErrorProps {
-    field: {
-        state: {
-            meta: {
-                isTouched: boolean
-                errors: Array<unknown>
-            }
+interface FieldMeta {
+    state: {
+        meta: {
+            isTouched: boolean
+            errors: Array<unknown>
         }
     }
 }
@@ -50,388 +42,220 @@ function getErrorMessage(error: unknown) {
     return m.contact_validation_invalid_value()
 }
 
-function FieldError({ field }: FieldErrorProps) {
-    const hasError = field.state.meta.isTouched && field.state.meta.errors.length > 0
-    const errorMessage = field.state.meta.errors[0]
-    const displayMessage = hasError ? getErrorMessage(errorMessage) : ''
-
-    return (
-        <AnimatePresence>
-            {hasError && (
-                <motion.span
-                    initial={{ opacity: 0, y: -5 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -5 }}
-                    transition={{ duration: 0.2, ease: smoothEase }}
-                    className="flex items-center gap-1 text-sm text-red-400"
-                    role="alert"
-                >
-                    <AlertCircle size={14} aria-hidden="true" />
-                    {displayMessage}
-                </motion.span>
-            )}
-        </AnimatePresence>
-    )
+/** First validation error of a touched field, or `undefined`. */
+function fieldError(field: FieldMeta) {
+    const { isTouched, errors } = field.state.meta
+    return isTouched && errors.length > 0 ? getErrorMessage(errors[0]) : undefined
 }
 
-type SubmitStatus = 'success' | 'configuration_error' | 'verification_error' | 'send_error' | null
-
-function SubmitFeedback({ status }: { status: SubmitStatus }) {
+/**
+ * Dark "code editor" window from the design: grain-dark surface with clipped corners, a window bar
+ * (traffic-light dots, file name, glyph word) and the body.
+ */
+function FormWindow({ children }: { children: ReactNode }) {
     return (
-        <AnimatePresence>
-            {status === 'success' && (
-                <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="flex items-start gap-2 rounded-lg border border-green-500/30 bg-green-500/10 p-4 text-sm text-green-400"
-                    role="status"
-                >
-                    <CheckCircle2 size={18} className="mt-0.5 shrink-0" aria-hidden="true" />
-                    <span>
-                        <strong className="block">{m.contact_form_success_title()}</strong>
-                        {m.contact_form_success_text()}
+        <div className="bg-grain-dark overflow-hidden rounded-tl-3xl rounded-br-3xl text-paper lg:rounded-tl-[32px] lg:rounded-br-[32px]">
+            <div className="flex items-center justify-between gap-4 border-b-[1.5px] border-line-dark px-5 py-3.5 lg:px-6 lg:py-4">
+                <div className="flex items-center gap-3 lg:gap-3.5">
+                    <span aria-hidden="true" className="flex gap-[5px] lg:gap-1.5">
+                        <span className="size-[9px] rounded-full bg-coral lg:size-2.5" />
+                        <span className="size-[9px] rounded-full bg-on-dark-label lg:size-2.5" />
+                        <span className="size-[9px] rounded-full bg-line-dark-strong lg:size-2.5" />
                     </span>
-                </motion.div>
-            )}
-
-            {status === 'configuration_error' && (
-                <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="flex items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-400"
-                    role="alert"
-                >
-                    <AlertCircle size={18} aria-hidden="true" />
-                    {m.contact_form_error_not_configured()}
-                </motion.div>
-            )}
-
-            {status === 'send_error' && (
-                <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="flex items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-400"
-                    role="alert"
-                >
-                    <AlertCircle size={18} aria-hidden="true" />
-                    {m.contact_form_error_network()}
-                </motion.div>
-            )}
-
-            {status === 'verification_error' && (
-                <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="flex items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/10 p-4 text-sm text-red-400"
-                    role="alert"
-                >
-                    <AlertCircle size={18} aria-hidden="true" />
-                    {m.contact_form_error_verification()}
-                </motion.div>
-            )}
-        </AnimatePresence>
+                    <span aria-hidden="true" className="font-mono text-label font-semibold tracking-[0.025rem] text-paper normal-case">
+                        contact-request.ts
+                    </span>
+                </div>
+                <GlyphWord glyphs={WINDOW_GLYPHS} className="hidden gap-1 text-[13px] text-on-dark-label lg:inline-flex" />
+            </div>
+            <div className="flex flex-col gap-[18px] px-5 pt-6 pb-7 lg:gap-[22px] lg:px-8 lg:pt-8 lg:pb-9">{children}</div>
+        </div>
     )
 }
 
-function DirectContactCard() {
+const STATUS_MESSAGES: Record<Exclude<SubmitStatus, null | 'success'>, () => string> = {
+    configuration_error: m.contact_form_error_not_configured,
+    send_error: m.contact_form_error_network,
+    verification_error: m.contact_form_error_verification,
+    rate_limited: m.contact_form_error_rate_limited,
+    validation_error: m.contact_form_error_validation,
+}
+
+/** Success / error panel shown right above the submit button. */
+function SubmitFeedback({ status }: { status: SubmitStatus }) {
+    if (status === null) {
+        return null
+    }
+
+    const isSuccess = status === 'success'
+    const Icon = isSuccess ? CircleCheck : CircleAlert
+
     return (
-        <FadeIn direction="right" delay={0.2}>
-            <div className="relative overflow-hidden rounded-3xl border border-border-subtle bg-[#0d0d0d] p-7 shadow-2xl shadow-black/50 sm:p-10 md:p-12">
-                <div
-                    className="absolute inset-0 bg-[radial-gradient(circle_at_100%_0%,rgba(255,107,80,0.12),transparent_55%)]"
-                    aria-hidden="true"
-                />
-                <div className="relative">
-                    <div className="mb-8 flex h-14 w-14 items-center justify-center rounded-2xl border border-border bg-bg-elevated text-accent">
-                        <Mail size={26} aria-hidden="true" />
-                    </div>
-                    <p className="mb-4 text-xs font-bold uppercase tracking-[0.18em] text-accent">{m.contact_direct_label()}</p>
-                    <h2 className="mb-5 text-3xl font-bold tracking-tight text-white sm:text-4xl">{m.contact_direct_heading()}</h2>
-                    <p className="mb-8 max-w-md text-base leading-relaxed text-text-muted sm:text-lg">{m.contact_direct_text()}</p>
-                    <a
-                        href="mailto:jd@jandrly.cz"
-                        className="group inline-flex items-center justify-center gap-2 rounded-full bg-accent px-6 py-3.5 text-sm font-bold text-black transition-colors hover:bg-accent-hover"
-                    >
-                        {m.contact_direct_button()}
-                        <ArrowRight size={18} className="transition-transform group-hover:translate-x-1" aria-hidden="true" />
-                    </a>
-                </div>
+        <div
+            role={isSuccess ? 'status' : 'alert'}
+            className={cn(
+                'flex items-start gap-3 rounded-tl-[10px] rounded-br-[10px] border-[1.5px] bg-white/3 px-4 py-3.5',
+                isSuccess ? 'border-success' : 'border-coral',
+            )}
+        >
+            <Icon aria-hidden="true" className={cn('mt-px size-[18px] shrink-0', isSuccess ? 'text-success' : 'text-coral')} />
+            <div className="flex flex-col gap-1">
+                <p className={cn('font-mono text-label uppercase', isSuccess ? 'text-success' : 'text-coral')}>
+                    {isSuccess ? m.contact_form_status_sent() : m.contact_form_status_error()}
+                </p>
+                {isSuccess ? (
+                    <p className="text-body-sm text-paper">
+                        <strong className="font-bold">{m.contact_form_success_title()}.</strong> {m.contact_form_success_text()}
+                    </p>
+                ) : (
+                    <p className="text-body-sm text-paper">{keepHyphenatedWords(STATUS_MESSAGES[status]())}</p>
+                )}
             </div>
-        </FadeIn>
+        </div>
+    )
+}
+
+/** Shown instead of the form when no Turnstile sitekey is configured: a direct e-mail call to action. */
+function DirectContactCard() {
+    const email = useProtectedEmail()
+
+    return (
+        <FormWindow>
+            <Eyebrow tone="on-dark" glyphs={null}>
+                {m.contact_direct_label()}
+            </Eyebrow>
+            <h2 className={WINDOW_TITLE_CLASS}>{keepHyphenatedWords(m.contact_direct_heading())}</h2>
+            <p className="text-body text-on-dark">{m.contact_direct_text()}</p>
+            <ButtonLink href={email.href} className="mt-2">
+                {m.contact_direct_button()}
+            </ButtonLink>
+        </FormWindow>
     )
 }
 
 export function ContactForm() {
-    if (!TURNSTILE_SITE_KEY) {
+    if (!IS_CONTACT_FORM_CONFIGURED) {
         return <DirectContactCard />
     }
 
     return <ConfiguredContactForm />
 }
 
+/** Presentational `FormField` props; value, events, error and ids come from the bound field. */
+type TextFieldPresentation<T = FormFieldProps> = T extends unknown
+    ? Omit<T, 'id' | 'name' | 'value' | 'onChange' | 'onBlur' | 'error' | 'form'>
+    : never
+
+type ContactTextFieldProps = TextFieldPresentation & {
+    form: ContactFormApi
+    name: ContactFieldName
+}
+
+/** A visible contact field: the design's `FormField` bound to the form, validated on blur with the server's rules. */
+function ContactTextField({ form, name, ...fieldProps }: ContactTextFieldProps) {
+    return (
+        <form.Field name={name} validators={{ onBlur: CONTACT_FIELD_VALIDATORS[name] }}>
+            {(field) => (
+                <FormField
+                    {...(fieldProps as FormFieldProps)}
+                    id={field.name}
+                    name={field.name}
+                    value={field.state.value}
+                    onChange={(event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => field.handleChange(event.target.value)}
+                    onBlur={field.handleBlur}
+                    error={fieldError(field)}
+                />
+            )}
+        </form.Field>
+    )
+}
+
 function ConfiguredContactForm() {
-    const sendContactMessageFn = useServerFn(sendContactMessage)
-    const [submitStatus, setSubmitStatus] = useState<SubmitStatus>(null)
-    const [turnstileResetSignal, setTurnstileResetSignal] = useState(0)
-
-    const form = useForm({
-        defaultValues: {
-            name: '',
-            email: '',
-            phone: '',
-            message: '',
-            website: '',
-            formStartedAt: Date.now(),
-            turnstileToken: '',
-        },
-        onSubmit: async ({ value, formApi }) => {
-            setSubmitStatus(null)
-            const result = await sendContactMessageFn({ data: value })
-
-            setSubmitStatus(result.status)
-            setTurnstileResetSignal((signal) => signal + 1)
-
-            if (result.status === 'success') {
-                formApi.reset({
-                    name: '',
-                    email: '',
-                    phone: '',
-                    message: '',
-                    website: '',
-                    formStartedAt: Date.now(),
-                    turnstileToken: '',
-                })
-            } else {
-                formApi.setFieldValue('turnstileToken', '')
-            }
-        },
-    })
-
-    const handleFormAction = () => {
-        void form.handleSubmit()
-    }
+    const { form, status, canSubmit, isSubmitting, submit, turnstile } = useContactForm()
 
     return (
-        <FadeIn direction="right" delay={0.2}>
-            <div className="overflow-hidden rounded-2xl border border-border-subtle bg-[#0d0d0d] shadow-2xl shadow-black/50">
-                <div className="flex items-center gap-2 border-b border-border-subtle px-4 py-3">
-                    <div className="h-3 w-3 rounded-full bg-[#ff5f57]" aria-hidden="true" />
-                    <div className="h-3 w-3 rounded-full bg-[#febc2e]" aria-hidden="true" />
-                    <div className="h-3 w-3 rounded-full bg-[#28c840]" aria-hidden="true" />
-                    <span className="ml-4 font-mono text-xs text-text-subtle">contact-request.ts</span>
-                </div>
+        <FormWindow>
+            <h2 id="contact-form-title" className={WINDOW_TITLE_CLASS}>
+                {m.contact_form_heading()}
+            </h2>
 
-                <form className="space-y-6 p-6 sm:p-8 md:p-12" action={handleFormAction}>
-                    <h2 className="text-xl font-bold sm:text-2xl">{m.contact_form_heading()}</h2>
-
-                    <SubmitFeedback status={submitStatus} />
-
-                    <form.Field name="website">
-                        {(field) => (
-                            <div aria-hidden="true" className="absolute left-[-10000px] top-auto h-px w-px overflow-hidden">
-                                <label htmlFor={field.name}>Company website</label>
-                                <input
-                                    type="url"
-                                    id={field.name}
-                                    name={field.name}
-                                    value={field.state.value}
-                                    onChange={(event) => field.handleChange(event.target.value)}
-                                    tabIndex={-1}
-                                    autoComplete="off"
-                                />
-                            </div>
-                        )}
-                    </form.Field>
-
-                    <form.Field
-                        name="name"
-                        validators={{
-                            onBlur: createNameSchema(),
-                        }}
-                    >
-                        {(field) => (
-                            <div className="space-y-2">
-                                <label htmlFor={field.name} className="text-sm font-medium uppercase tracking-wider text-text-muted">
-                                    {m.contact_form_name()}
-                                </label>
-                                <motion.input
-                                    type="text"
-                                    id={field.name}
-                                    name={field.name}
-                                    autoComplete="name"
-                                    value={field.state.value}
-                                    onChange={(e) => {
-                                        setSubmitStatus(null)
-                                        field.handleChange(e.target.value)
-                                    }}
-                                    onBlur={field.handleBlur}
-                                    className={`w-full rounded-xl border bg-[#0a0a0a] px-4 py-4 text-white transition-colors focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0a] ${
-                                        field.state.meta.isTouched && field.state.meta.errors.length > 0
-                                            ? 'border-red-500'
-                                            : 'border-border'
-                                    }`}
-                                    placeholder={m.contact_form_name_placeholder()}
-                                    whileFocus={{ scale: 1.01 }}
-                                    transition={{ duration: 0.2, ease: smoothEase }}
-                                />
-                                <FieldError field={field} />
-                            </div>
-                        )}
-                    </form.Field>
-
-                    <form.Field
-                        name="email"
-                        validators={{
-                            onBlur: createEmailSchema(),
-                        }}
-                    >
-                        {(field) => (
-                            <div className="space-y-2">
-                                <label htmlFor={field.name} className="text-sm font-medium uppercase tracking-wider text-text-muted">
-                                    {m.contact_form_email()}
-                                </label>
-                                <motion.input
-                                    type="email"
-                                    id={field.name}
-                                    name={field.name}
-                                    autoComplete="email"
-                                    spellCheck={false}
-                                    value={field.state.value}
-                                    onChange={(e) => {
-                                        setSubmitStatus(null)
-                                        field.handleChange(e.target.value)
-                                    }}
-                                    onBlur={field.handleBlur}
-                                    className={`w-full rounded-xl border bg-[#0a0a0a] px-4 py-4 text-white transition-colors focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0a] ${
-                                        field.state.meta.isTouched && field.state.meta.errors.length > 0
-                                            ? 'border-red-500'
-                                            : 'border-border'
-                                    }`}
-                                    placeholder={m.contact_form_email_placeholder()}
-                                    whileFocus={{ scale: 1.01 }}
-                                    transition={{ duration: 0.2, ease: smoothEase }}
-                                />
-                                <FieldError field={field} />
-                            </div>
-                        )}
-                    </form.Field>
-
-                    <form.Field
-                        name="phone"
-                        validators={{
-                            onBlur: createPhoneSchema(),
-                        }}
-                    >
-                        {(field) => (
-                            <div className="space-y-2">
-                                <label htmlFor={field.name} className="text-sm font-medium uppercase tracking-wider text-text-muted">
-                                    {m.contact_form_phone()}
-                                </label>
-                                <motion.input
-                                    type="tel"
-                                    id={field.name}
-                                    name={field.name}
-                                    autoComplete="tel"
-                                    inputMode="tel"
-                                    value={field.state.value}
-                                    onChange={(e) => {
-                                        setSubmitStatus(null)
-                                        field.handleChange(e.target.value)
-                                    }}
-                                    onBlur={field.handleBlur}
-                                    className={`w-full rounded-xl border bg-[#0a0a0a] px-4 py-4 text-white transition-colors focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0a] ${
-                                        field.state.meta.isTouched && field.state.meta.errors.length > 0
-                                            ? 'border-red-500'
-                                            : 'border-border'
-                                    }`}
-                                    placeholder={m.contact_form_phone_placeholder()}
-                                    whileFocus={{ scale: 1.01 }}
-                                    transition={{ duration: 0.2, ease: smoothEase }}
-                                />
-                                <FieldError field={field} />
-                            </div>
-                        )}
-                    </form.Field>
-
-                    <form.Field
-                        name="message"
-                        validators={{
-                            onBlur: createMessageSchema(),
-                        }}
-                    >
-                        {(field) => (
-                            <div className="space-y-2">
-                                <label htmlFor={field.name} className="text-sm font-medium uppercase tracking-wider text-text-muted">
-                                    {m.contact_form_message()}
-                                </label>
-                                <motion.textarea
-                                    id={field.name}
-                                    name={field.name}
-                                    rows={5}
-                                    value={field.state.value}
-                                    onChange={(e) => {
-                                        setSubmitStatus(null)
-                                        field.handleChange(e.target.value)
-                                    }}
-                                    onBlur={field.handleBlur}
-                                    className={`w-full resize-none rounded-xl border bg-[#0a0a0a] px-4 py-4 text-white transition-colors focus:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-[#0a0a0a] ${
-                                        field.state.meta.isTouched && field.state.meta.errors.length > 0
-                                            ? 'border-red-500'
-                                            : 'border-border'
-                                    }`}
-                                    placeholder={m.contact_form_message_placeholder()}
-                                    whileFocus={{ scale: 1.01 }}
-                                    transition={{ duration: 0.2, ease: smoothEase }}
-                                />
-                                <FieldError field={field} />
-                            </div>
-                        )}
-                    </form.Field>
-
-                    <form.Field name="turnstileToken">
-                        {(field) => (
-                            <TurnstileWidget
-                                siteKey={TURNSTILE_SITE_KEY}
-                                resetSignal={turnstileResetSignal}
-                                onTokenChange={(token) => {
-                                    setSubmitStatus(null)
-                                    field.handleChange(token)
-                                }}
+            <form aria-labelledby="contact-form-title" className="flex flex-col gap-[18px] lg:gap-[22px]" action={submit}>
+                <form.Field name={HONEYPOT_FIELD}>
+                    {(field) => (
+                        <div aria-hidden="true" className="absolute left-[-10000px] top-auto h-px w-px overflow-hidden">
+                            <label htmlFor={`contact-${field.name}`}>Subject</label>
+                            <input
+                                type="text"
+                                id={`contact-${field.name}`}
+                                name={field.name}
+                                value={field.state.value}
+                                onChange={(event) => field.handleChange(event.target.value)}
+                                tabIndex={-1}
+                                autoComplete="off"
+                                data-1p-ignore
+                                data-lpignore="true"
+                                data-bwignore
+                                data-form-type="other"
                             />
-                        )}
-                    </form.Field>
+                        </div>
+                    )}
+                </form.Field>
 
-                    <form.Subscribe selector={(state) => [state.canSubmit, state.isSubmitting, state.values.turnstileToken] as const}>
-                        {([canSubmit, isSubmitting, turnstileToken]) => (
-                            <motion.button
-                                type="submit"
-                                disabled={!canSubmit || isSubmitting || !turnstileToken}
-                                className="flex w-full items-center justify-center gap-2 rounded-xl bg-white py-4 font-bold text-black transition-colors hover:bg-accent hover:text-white disabled:cursor-not-allowed disabled:opacity-70"
-                                whileHover={{ scale: canSubmit && !isSubmitting ? 1.02 : 1 }}
-                                whileTap={{ scale: canSubmit && !isSubmitting ? 0.98 : 1 }}
-                                transition={{ duration: 0.2, ease: smoothEase }}
-                            >
-                                {isSubmitting ? (
-                                    <motion.span
-                                        className="h-5 w-5 rounded-full border-2 border-current border-t-transparent"
-                                        animate={{ rotate: 360 }}
-                                        transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                                        aria-label={m.contact_form_submitting()}
-                                    />
-                                ) : (
-                                    <>
-                                        {m.contact_form_submit()} <Send size={18} aria-hidden="true" />
-                                    </>
-                                )}
-                            </motion.button>
-                        )}
-                    </form.Subscribe>
-                </form>
-            </div>
-        </FadeIn>
+                <ContactTextField
+                    form={form}
+                    name="name"
+                    label={m.contact_form_name()}
+                    typeHint="string"
+                    type="text"
+                    autoComplete="name"
+                    placeholder={m.contact_form_name_placeholder()}
+                />
+                <ContactTextField
+                    form={form}
+                    name="email"
+                    label={m.contact_form_email()}
+                    typeHint="string"
+                    type="email"
+                    autoComplete="email"
+                    spellCheck={false}
+                    placeholder={m.contact_form_email_placeholder()}
+                />
+                <ContactTextField
+                    form={form}
+                    name="phone"
+                    label={m.contact_form_phone()}
+                    typeHint="string?"
+                    type="tel"
+                    autoComplete="tel"
+                    inputMode="tel"
+                    placeholder={m.contact_form_phone_placeholder()}
+                />
+                <ContactTextField
+                    form={form}
+                    name="message"
+                    multiline
+                    label={m.contact_form_message()}
+                    typeHint="text"
+                    rows={5}
+                    placeholder={m.contact_form_message_placeholder()}
+                />
+
+                {/* Invisible unless Turnstile needs a visible challenge, which then pushes the submit row down. */}
+                {turnstile ? (
+                    <TurnstileWidget
+                        key={turnstile.key}
+                        siteKey={turnstile.siteKey}
+                        cData={turnstile.cData}
+                        onTokenChange={turnstile.onTokenChange}
+                    />
+                ) : null}
+
+                <SubmitFeedback status={status} />
+
+                <SubmitButton disabled={!canSubmit} isPending={isSubmitting} pendingLabel={m.contact_form_submitting()}>
+                    {m.contact_form_submit()}
+                </SubmitButton>
+            </form>
+        </FormWindow>
     )
 }
