@@ -3,8 +3,10 @@
 # Lighthouse accessibility / best-practices / SEO thresholds. Free: the repository is public, so GitHub-hosted
 # runner minutes cost nothing.
 #
-# No secrets are needed: FORM_TOKEN_SECRET, TURNSTILE_SECRET_KEY, RESEND_* and UPSTASH_* are read at runtime by
-# the contact form endpoint only, which this workflow never calls.
+# One secret is needed: MOTION_TOKEN, the Motion+ registry token, to install the private `motion-plus` package
+# (docs/production-setup.md, step 0). GitHub does not pass secrets to workflows of pull requests from forks, so their
+# install fails with a 401; that is expected for this repository. FORM_TOKEN_SECRET, TURNSTILE_SECRET_KEY, RESEND_*
+# and UPSTASH_* are read at runtime by the contact form endpoint only, which this workflow never calls.
 name: SEO checks
 
 on:
@@ -42,6 +44,12 @@ jobs:
               with:
                   node-version: 24
                   cache: pnpm
+
+            # pnpm 11 ignores an env-expanded token in the committed .npmrc; put it in the runner's user config instead.
+            - name: Authenticate the Motion+ registry
+              run: pnpm config set "//api.motion.dev/npm/:_authToken" "$MOTION_TOKEN"
+              env:
+                  MOTION_TOKEN: ${{ secrets.MOTION_TOKEN }}
 
             - run: pnpm install --frozen-lockfile
 

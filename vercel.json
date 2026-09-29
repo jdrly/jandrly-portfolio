@@ -1,0 +1,4 @@
+{
+    "$schema": "https://openapi.vercel.sh/vercel.json",
+    "installCommand": "pnpm config set \"//api.motion.dev/npm/:_authToken\" \"$MOTION_TOKEN\" && pnpm install --frozen-lockfile"
+}

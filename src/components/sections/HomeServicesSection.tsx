@@ -30,12 +30,16 @@ export function HomeServicesSection() {
                         <Eyebrow>{m.home_services_eyebrow()}</Eyebrow>
                         <h2
                             id="home-services-heading"
+                            data-reveal="words"
+                            data-scroll="drift"
                             className="font-display text-home-title whitespace-pre-line text-ink lg:leading-[0.95] lg:tracking-[-0.0357em]"
                         >
                             {m.home_services_title()}
                         </h2>
                     </div>
-                    <p className="text-lead text-ink lg:w-[22rem] lg:shrink-0 xl:w-[27.5rem]">{m.benefits_heading()}</p>
+                    <p data-reveal="fade-up" className="text-lead text-ink lg:w-[22rem] lg:shrink-0 xl:w-[27.5rem]">
+                        {m.benefits_heading()}
+                    </p>
                     {/* Only from 90rem: between xl and 90rem the ornament squeezes the title column below the width of "Od návrhu" / "From design". */}
                     <StarOrnament className="hidden min-[90rem]:block" />
                 </div>
@@ -54,7 +58,7 @@ export function HomeServicesSection() {
                     ))}
                 </ul>
 
-                <ArrowLink to="/services" className="-mt-2 self-end lg:-mt-6">
+                <ArrowLink to="/services" reveal className="-mt-2 self-end lg:-mt-6">
                     {m.home_services_link()}
                 </ArrowLink>
             </div>

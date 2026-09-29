@@ -25,14 +25,23 @@ export function ProcessStep({
 }: ProcessStepProps) {
     return (
         <Component
+            data-step=""
             className={cn(
-                'flex flex-col gap-2.5 border-l-2 border-line-dark pl-5 lg:gap-[18px] lg:border-t-2 lg:border-l-0 lg:border-on-dark-label lg:pt-6 lg:pl-0',
+                'relative flex flex-col gap-2.5 border-l-2 border-line-dark pl-5 lg:gap-[18px] lg:border-t-2 lg:border-l-0 lg:border-on-dark-label lg:pt-6 lg:pl-0',
                 className,
             )}
         >
+            {/* Desktop: the scroll-linked fill, drawn exactly over this step's own top rule (the border). */}
+            <span
+                aria-hidden="true"
+                data-scroll="step-fill"
+                className="pointer-events-none absolute inset-x-0 -top-0.5 hidden h-0.5 scale-x-0 bg-on-dark-label lg:block"
+            />
             <div className="flex items-center justify-between">
-                <span className="font-mono text-index-lg font-semibold text-on-dark-label lg:font-medium">{number}</span>
-                <span aria-hidden="true" className="hidden size-3 rounded-full bg-on-dark-label lg:block" />
+                <span data-step-number="" className="font-mono text-index-lg font-semibold text-on-dark-label lg:font-medium">
+                    {number}
+                </span>
+                <span aria-hidden="true" data-step-dot="" className="hidden size-3 rounded-full bg-on-dark-label lg:block" />
             </div>
             <div className="flex flex-col gap-2 lg:gap-[18px]">
                 <Heading className="text-h5 text-paper">{title}</Heading>

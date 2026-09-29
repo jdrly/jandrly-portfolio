@@ -33,37 +33,47 @@ interface StarOrnamentProps {
     className?: string
 }
 
-/** Compass-like ornament: ring, crosshair and a four-point star (optionally an inner ring). Decorative only. */
+/** Compass-like ornament: ring, crosshair and a four-point star (optionally an inner ring). Decorative only. Spins in on reveal. */
 export function StarOrnament({ variant = 'default', className }: StarOrnamentProps) {
     const { box, star, innerRing, sizeClass } = VARIANTS[variant]
     const center = box / 2
     const starOffset = (box - star) / 2
 
     return (
-        <svg aria-hidden="true" focusable="false" viewBox={`0 0 ${box} ${box}`} className={cn('shrink-0 text-tan', sizeClass, className)}>
-            <circle
-                cx={center}
-                cy={center}
-                r={center - RULE / 2}
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={RULE}
-                vectorEffect="non-scaling-stroke"
-            />
-            {innerRing ? (
+        <svg
+            aria-hidden="true"
+            focusable="false"
+            data-reveal="spin"
+            viewBox={`0 0 ${box} ${box}`}
+            className={cn('shrink-0 text-tan', sizeClass, className)}
+        >
+            {/* Ring, crosshair and star turn with the scroll as one unit (around the ornament's centre), so the star's
+                points never slide off the crosshair. */}
+            <g data-scroll="spin" className="origin-center [transform-box:fill-box]">
                 <circle
                     cx={center}
                     cy={center}
-                    r={innerRing / 2 - 0.5}
+                    r={center - RULE / 2}
                     fill="none"
                     stroke="currentColor"
-                    strokeWidth="1"
+                    strokeWidth={RULE}
                     vectorEffect="non-scaling-stroke"
                 />
-            ) : null}
-            <rect x="0" y={center - RULE / 2} width={box} height={RULE} fill="currentColor" />
-            <rect x={center - RULE / 2} y="0" width={RULE} height={box} fill="currentColor" />
-            <path d={STAR_PATH} transform={`translate(${starOffset} ${starOffset}) scale(${star / 100})`} fill="currentColor" />
+                {innerRing ? (
+                    <circle
+                        cx={center}
+                        cy={center}
+                        r={innerRing / 2 - 0.5}
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1"
+                        vectorEffect="non-scaling-stroke"
+                    />
+                ) : null}
+                <rect x="0" y={center - RULE / 2} width={box} height={RULE} fill="currentColor" />
+                <rect x={center - RULE / 2} y="0" width={RULE} height={box} fill="currentColor" />
+                <path d={STAR_PATH} transform={`translate(${starOffset} ${starOffset}) scale(${star / 100})`} fill="currentColor" />
+            </g>
         </svg>
     )
 }

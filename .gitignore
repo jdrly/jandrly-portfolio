@@ -20,3 +20,5 @@ portfolio_old/
 # Local agent tooling (Motion AI kit etc.)
 .claude/
 .mcp.json
+.env*
+!.env.example

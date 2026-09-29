@@ -62,7 +62,12 @@ function FormWindow({ children }: { children: ReactNode }) {
                         <span className="size-[9px] rounded-full bg-on-dark-label lg:size-2.5" />
                         <span className="size-[9px] rounded-full bg-line-dark-strong lg:size-2.5" />
                     </span>
-                    <span aria-hidden="true" className="font-mono text-label font-semibold tracking-[0.025rem] text-paper normal-case">
+                    <span
+                        aria-hidden="true"
+                        data-reveal="type"
+                        data-reveal-delay="0.4"
+                        className="font-mono text-label font-semibold tracking-[0.025rem] text-paper normal-case"
+                    >
                         contact-request.ts
                     </span>
                 </div>

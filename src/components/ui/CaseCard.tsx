@@ -37,13 +37,16 @@ export function CaseCard({
 }: CaseCardProps) {
     return (
         <article
+            data-hover-group=""
             className={cn(
                 'flex flex-col gap-[18px] rounded-tl-[22px] rounded-br-[22px] border-[1.5px] border-line-dark px-5 pt-[22px] pb-6 lg:gap-7 lg:rounded-tl-[28px] lg:rounded-br-[28px] lg:px-7 lg:pt-7 lg:pb-8',
                 className,
             )}
         >
             <div className="flex items-center justify-between gap-4">
-                <p className="font-mono text-label text-paper">{code}</p>
+                <p data-scramble-hover="" className="font-mono text-label text-paper">
+                    {code}
+                </p>
                 <GlyphWord
                     glyphs={glyphs}
                     className="gap-[0.31em] text-[clamp(0.8125rem,0.1905vw+0.7661rem,0.9375rem)] text-on-dark-label"

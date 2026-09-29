@@ -11,6 +11,7 @@ export function RootNotFound() {
                 <div className="flex items-end justify-between gap-6">
                     <p
                         aria-hidden="true"
+                        data-reveal="chars"
                         className="font-mono text-[clamp(4.5rem,7.619vw+2.643rem,9.5rem)] leading-none font-medium tracking-[-0.04em] text-teal-ink"
                     >
                         404
@@ -19,11 +20,13 @@ export function RootNotFound() {
                 </div>
                 <div className="flex flex-col gap-5 border-t-[1.5px] border-ink pt-5 lg:gap-7 lg:pt-7">
                     <Eyebrow tone="teal">{m.notfound_eyebrow()}</Eyebrow>
-                    <h1 id="notfound-title" className="max-w-[56.25rem] font-display text-h1 text-ink">
+                    <h1 id="notfound-title" data-reveal="words" className="max-w-[56.25rem] font-display text-h1 text-ink">
                         {m.notfound_title()}
                     </h1>
-                    <p className="max-w-160 text-lead text-ink-soft">{m.notfound_text()}</p>
-                    <ButtonLink to="/" className="mt-2">
+                    <p data-reveal="fade-up" className="max-w-160 text-lead text-ink-soft">
+                        {m.notfound_text()}
+                    </p>
+                    <ButtonLink to="/" data-reveal="fade-up" className="mt-2">
                         {m.notfound_button()}
                     </ButtonLink>
                 </div>

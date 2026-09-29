@@ -4,6 +4,7 @@ import { TanStackDevtools } from '@tanstack/react-devtools'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import type { ReactNode } from 'react'
 
+import { MOTION_BOOT_SCRIPT } from '@/lib/motion/bootScript'
 import { getLocale } from '@/paraglide/runtime'
 
 const devtoolsConfig = {
@@ -28,8 +29,11 @@ export function RootDocument({ children }: { children: ReactNode }) {
     const locale = getLocale()
 
     return (
-        <html lang={locale}>
+        // The head script may set `data-intro` / `data-cover` on <html> before hydration (intentional, attribute only).
+        <html lang={locale} suppressHydrationWarning>
             <head>
+                {/* Must run before the first paint: decides whether the intro or the arrive curtain covers the page. */}
+                <script dangerouslySetInnerHTML={{ __html: MOTION_BOOT_SCRIPT }} />
                 <HeadContent />
             </head>
             <body>

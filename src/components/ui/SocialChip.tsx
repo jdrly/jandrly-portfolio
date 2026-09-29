@@ -23,7 +23,7 @@ export function SocialChip({ href, label, icon, className }: SocialChipProps) {
             )}
         >
             <BrandIcon icon={icon} className="size-4 shrink-0 lg:size-[18px]" />
-            {label}
+            <span data-scramble-hover="">{label}</span>
             <span className="sr-only"> {m.opens_in_new_tab()}</span>
         </a>
     )

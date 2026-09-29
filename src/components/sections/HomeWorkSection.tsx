@@ -1,9 +1,11 @@
-import { Fragment } from 'react'
+import { Fragment, Suspense, lazy, useEffect, useRef, useState } from 'react'
 import type { GlyphId } from '@/components/ui/GlyphWord'
 import { BARCODE_PATTERNS } from '@/components/ui/barcodePatterns'
 import { CaseCard } from '@/components/ui/CaseCard'
 import { Eyebrow } from '@/components/ui/Eyebrow'
 import { GlyphWord } from '@/components/ui/GlyphWord'
+import { CLIENT_GROUPS, CLIENT_NAME_CLASS } from '@/components/sections/clientNames'
+import { prefersReducedMotion } from '@/lib/motion/env'
 import { cn } from '@/lib/utils'
 import * as m from '@/paraglide/messages'
 
@@ -52,15 +54,6 @@ const CASES: ReadonlyArray<WorkCase> = [
     },
 ]
 
-/** Client names, grouped as the mobile design breaks them into lines (one justified row from `xl`). */
-const CLIENT_GROUPS: ReadonlyArray<ReadonlyArray<string>> = [
-    ['Forecom Solutions'],
-    ['eSoul', 'Eywo', 'Cymedica'],
-    ['Safetica', 'BOS Automotive'],
-]
-
-const CLIENT_NAME_CLASS = 'font-display text-[clamp(1.5rem,0.7619vw+1.3143rem,2rem)] leading-[1.2]'
-
 function ClientSeparator({ className }: { className?: string }) {
     return (
         <span aria-hidden="true" className={cn(CLIENT_NAME_CLASS, 'font-normal text-line-dark-strong', className)}>
@@ -88,6 +81,41 @@ function ClientList() {
     )
 }
 
+const ClientMarquee = lazy(() => import('@/components/sections/ClientMarquee'))
+
+/**
+ * The static list is what the server renders (and what stays without JavaScript or with reduced motion). After
+ * hydration it becomes a marquee, swapped only while it is off screen so the change in height is never seen.
+ */
+function Clients() {
+    const ref = useRef<HTMLDivElement>(null)
+    const [marquee, setMarquee] = useState(false)
+
+    useEffect(() => {
+        const element = ref.current
+        if (!element || prefersReducedMotion()) return
+        const observer = new IntersectionObserver((entries) => {
+            if (entries.some((entry) => entry.isIntersecting)) return
+            observer.disconnect()
+            setMarquee(true)
+        })
+        observer.observe(element)
+        return () => observer.disconnect()
+    }, [])
+
+    return (
+        <div ref={ref}>
+            {marquee ? (
+                <Suspense fallback={<ClientList />}>
+                    <ClientMarquee />
+                </Suspense>
+            ) : (
+                <ClientList />
+            )}
+        </div>
+    )
+}
+
 /** "[03] Typická zadání" — ink section with three case cards and the selected-clients strip. */
 export function HomeWorkSection() {
     return (
@@ -100,15 +128,19 @@ export function HomeWorkSection() {
                         </Eyebrow>
                         <h2
                             id="home-work-heading"
+                            data-reveal="words"
+                            data-scroll="drift"
                             className="font-display text-home-title text-paper lg:leading-[0.95] lg:tracking-[-0.0357em]"
                         >
                             {m.home_work_title()}
                         </h2>
                     </div>
-                    <p className="text-body text-on-dark lg:w-[27.5rem] lg:shrink-0">{m.work_subtitle()}</p>
+                    <p data-reveal="fade-up" className="text-body text-on-dark lg:w-[27.5rem] lg:shrink-0">
+                        {m.work_subtitle()}
+                    </p>
                 </div>
 
-                <ul className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-6">
+                <ul data-reveal="cards" className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-6">
                     {CASES.map((item) => (
                         <li key={item.code} className="flex">
                             <CaseCard
@@ -125,14 +157,14 @@ export function HomeWorkSection() {
                 </ul>
 
                 <div className="flex flex-col gap-4 border-t-[1.5px] border-line-dark pt-7 pb-14 lg:gap-6 lg:pt-10">
-                    <p className="flex items-center gap-3 text-on-dark lg:gap-4">
+                    <p data-reveal="fade-up" className="flex items-center gap-3 text-on-dark lg:gap-4">
                         <span className="font-mono text-label uppercase">{m.work_clients_label()}</span>
                         <GlyphWord
                             glyphs={CLIENTS_GLYPHS}
                             className="gap-[0.31em] text-[clamp(0.8125rem,0.1905vw+0.7661rem,0.9375rem)] text-on-dark-label"
                         />
                     </p>
-                    <ClientList />
+                    <Clients />
                 </div>
             </div>
         </section>

@@ -120,11 +120,15 @@ function PrivacyHero() {
                 </Eyebrow>
                 <h1
                     id="privacy-title"
+                    data-reveal="words"
                     className="max-w-[56.25rem] font-display text-[clamp(2.5rem,4.1905vw+1.4786rem,5.25rem)] leading-[0.97] font-black tracking-[-0.036em] text-ink"
                 >
                     {m.privacy_title()}
                 </h1>
-                <div className="flex flex-col-reverse items-start gap-5 lg:flex-row lg:items-center lg:justify-between lg:gap-10 lg:border-t-[1.5px] lg:border-ink lg:pt-5">
+                <div
+                    data-reveal="fade-up"
+                    className="flex flex-col-reverse items-start gap-5 lg:flex-row lg:items-center lg:justify-between lg:gap-10 lg:border-t-[1.5px] lg:border-ink lg:pt-5"
+                >
                     <p className="max-w-160 text-lead text-ink">{keepHyphenatedWords(m.privacy_intro())}</p>
                     <p className="flex shrink-0 items-center gap-2 rounded-tl-lg rounded-br-lg border-[1.5px] border-ink px-3 py-2 font-mono text-label font-semibold tracking-[0.0375rem] text-ink uppercase lg:gap-2.5 lg:rounded-tl-[10px] lg:rounded-br-[10px] lg:px-4 lg:py-2.5 lg:tracking-[0.0625rem]">
                         <span aria-hidden="true" className="size-[7px] rounded-full bg-teal lg:size-2" />

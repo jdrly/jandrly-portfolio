@@ -11,7 +11,7 @@ interface BarcodeProps {
     className?: string
 }
 
-/** Decorative barcode, drawn as one SVG so arbitrary bar widths need no inline styles. */
+/** Decorative barcode, drawn as one SVG so arbitrary bar widths need no inline styles. Its bars print in on reveal. */
 export function Barcode({ bars = BARCODE_PATTERNS.default, gap = 4, height = 40, className }: BarcodeProps) {
     const width = bars.reduce((sum, bar) => sum + bar, 0) + gap * (bars.length - 1)
     const offsets = bars.map((_, index) => bars.slice(0, index).reduce((sum, bar) => sum + bar + gap, 0))
@@ -24,6 +24,7 @@ export function Barcode({ bars = BARCODE_PATTERNS.default, gap = 4, height = 40,
             width={width}
             height={height}
             preserveAspectRatio="none"
+            data-reveal="bars"
             className={cn('shrink-0 fill-current text-ink', className)}
         >
             {bars.map((bar, index) => (
