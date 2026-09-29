@@ -2,9 +2,9 @@
 # every URL of the live sitemap. Free, no account, no secret: the key is the public file public/<key>.txt.
 #
 # Vercel's GitHub integration reports each deployment to GitHub as a Deployment + DeploymentStatus. Production
-# deployments carry `production_environment: true` and an environment named "Production" (or
-# "Production – <project>"); previews are "Preview…" with `production_environment: false`, so the job condition
-# below never matches a preview. Google does not use IndexNow; it reads the sitemap on its own.
+# deployments use an environment named "Production" (or "Production – <project>"), previews "Preview…", so the job
+# condition below never matches a preview. Vercel sends `production_environment: false` for both, so that flag
+# can't be used. Google does not use IndexNow; it reads the sitemap on its own.
 name: IndexNow
 
 on:
@@ -23,7 +23,6 @@ jobs:
         if: >-
             github.event_name == 'workflow_dispatch' ||
             (github.event.deployment_status.state == 'success' &&
-             github.event.deployment.production_environment == true &&
              startsWith(github.event.deployment.environment, 'Production'))
         runs-on: ubuntu-latest
         timeout-minutes: 10
@@ -41,7 +40,15 @@ jobs:
 
             - name: Wait until the production domain serves this deployment's key file
               run: |
-                  key_file=$(find public -maxdepth 1 -regex '.*/[0-9a-f]\{32\}\.txt' -exec basename {} \;)
+                  key_file=""
+                  for file in public/*.txt; do
+                    name=$(basename "$file")
+                    if [[ $name =~ ^[0-9a-f]{32}\.txt$ ]]; then key_file=$name; fi
+                  done
+                  if [ -z "$key_file" ]; then
+                    echo "No IndexNow key file (32 hex characters + .txt) in public/" >&2
+                    exit 1
+                  fi
                   for _ in $(seq 1 20); do
                     if [ "$(curl -fsS "$SITE/$key_file" || true)" = "${key_file%.txt}" ]; then exit 0; fi
                     sleep 15
