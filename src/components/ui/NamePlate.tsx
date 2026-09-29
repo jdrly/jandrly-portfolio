@@ -19,11 +19,11 @@ export function NamePlate({ name = 'JAN / DRLÝ', meta = [], as: Name = 'p', cla
     return (
         <div
             className={cn(
-                'bg-grain flex min-h-[clamp(4rem,9.1429vw+1.7714rem,10rem)] items-end gap-7 rounded-tl-[clamp(1.25rem,1.1429vw+0.9714rem,2rem)] border-t-[1.5px] border-l-[1.5px] border-line pr-4 pl-5 lg:px-10 lg:pt-[22px] lg:pb-1.5',
+                'bg-grain flex min-h-[clamp(4rem,9.1429vw+1.7714rem,10rem)] items-end lg:min-h-[clamp(6rem,min(9.1429vw+1.7714rem,14.8148svh),10rem)] gap-7 rounded-tl-[clamp(1.25rem,1.1429vw+0.9714rem,2rem)] border-t-[1.5px] border-l-[1.5px] border-line pr-4 pl-5 lg:px-10 lg:pt-[22px] lg:pb-1.5',
                 className,
             )}
         >
-            <Name className="font-display text-[clamp(2.25rem,min(12.8206vw,6.6667vw+1.5rem),7.5rem)] leading-[0.92] font-black tracking-[-0.0417em] whitespace-nowrap text-ink">
+            <Name className="font-display text-[clamp(2.25rem,min(12.8206vw,6.6667vw+1.5rem),7.5rem)] leading-[0.92] lg:text-[clamp(4rem,min(6.6667vw+1.5rem,11.1111svh),7.5rem)] font-black tracking-[-0.0417em] whitespace-nowrap text-ink">
                 {name}
             </Name>
             {meta.length > 0 ? (
