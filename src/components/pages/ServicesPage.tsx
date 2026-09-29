@@ -48,13 +48,13 @@ function HeroSpec({ className }: { className?: string }) {
         <div className={cn('flex flex-col gap-1.5 border-ink font-mono lg:gap-2.5', className)}>
             <div aria-hidden="true" className="flex flex-col gap-1.5 text-code leading-[1.3] whitespace-pre text-ink lg:gap-2.5">
                 {lines.map(([keyword, value]) => (
-                    <span key={keyword}>
+                    <span key={keyword} data-reveal="type">
                         {keyword.padEnd(SPEC_KEYWORD_WIDTH)}
                         {value}
                     </span>
                 ))}
             </div>
-            <p className="text-label text-tan uppercase">
+            <p data-reveal="fade-up" className="text-label text-tan uppercase">
                 <span aria-hidden="true">→ </span>
                 {m.services_spec_result()}
             </p>
@@ -71,10 +71,12 @@ function HeroSection() {
                         <Eyebrow>{m.services_hero_eyebrow()}</Eyebrow>
                         <StarOrnament variant="compact" className="lg:hidden" />
                     </div>
-                    <h1 id="services-title" className="text-h1 text-ink xl:text-wrap">
+                    <h1 id="services-title" data-reveal="words" className="text-h1 text-ink xl:text-wrap">
                         {m.services_hero_title()}
                     </h1>
-                    <p className="text-page-lead max-w-[36.25rem] text-ink-soft">{m.services_subtitle()}</p>
+                    <p data-reveal="fade-up" className="text-page-lead max-w-[36.25rem] text-ink-soft">
+                        {m.services_subtitle()}
+                    </p>
                     <HeroSpec className="border-y-[1.5px] py-3.5 lg:hidden" />
                 </div>
                 <div className="hidden w-[min(25rem,34%)] shrink-0 flex-col items-end gap-8 lg:flex">
@@ -92,7 +94,7 @@ function AreasSection() {
             <div className="container-page flex flex-col gap-7 pt-4 pb-section-end lg:gap-14 lg:pt-10">
                 <div className="flex flex-col gap-7 lg:gap-5">
                     <Eyebrow glyphs={GLYPHS.areas}>{m.services_areas_eyebrow()}</Eyebrow>
-                    <h2 id="services-areas-title" className="max-w-[47.5rem] text-h2 text-ink">
+                    <h2 id="services-areas-title" data-reveal="words" className="max-w-[47.5rem] text-h2 text-ink">
                         {m.services_areas_title()}
                     </h2>
                 </div>
@@ -126,14 +128,23 @@ function ProcessSection() {
                         <Eyebrow tone="on-dark" glyphs={GLYPHS.process}>
                             {m.services_process_eyebrow()}
                         </Eyebrow>
-                        <h2 id="services-process-title" className="font-display text-section-title text-paper">
+                        <h2
+                            id="services-process-title"
+                            data-reveal="words"
+                            data-scroll="drift"
+                            className="font-display text-section-title text-paper"
+                        >
                             {m.services_process_title()}
                         </h2>
                     </div>
-                    <p className="text-page-lead text-on-dark lg:w-[26.25rem] lg:shrink-0">{m.process_subtitle()}</p>
+                    <p data-reveal="fade-up" className="text-page-lead text-on-dark lg:w-[26.25rem] lg:shrink-0">
+                        {m.process_subtitle()}
+                    </p>
                 </div>
 
-                <ol className="flex flex-col lg:grid lg:grid-cols-4 lg:gap-8">
+                {/* With the scroll, each step's rule fills in turn and the step lights up (ProcessStep). Without JavaScript,
+                    or with reduced motion, the static rules show. */}
+                <ol data-scroll-root="" data-scroll="steps" data-reveal="stagger" className="flex flex-col lg:grid lg:grid-cols-4 lg:gap-8">
                     {STEPS.map((step, index) => (
                         <ProcessStep
                             key={step.number}
@@ -146,7 +157,7 @@ function ProcessSection() {
                     ))}
                 </ol>
 
-                <ArrowLink to="/about" tone="on-dark">
+                <ArrowLink to="/about" tone="on-dark" reveal>
                     {m.services_about_link()}
                 </ArrowLink>
             </div>

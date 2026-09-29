@@ -6,6 +6,7 @@ import { NAV_ACTIVE_OPTIONS, NAV_ITEMS } from '@/components/layout/navItems'
 import { Wordmark } from '@/components/layout/Wordmark'
 import { ButtonLink } from '@/components/ui/Button'
 import { SocialChip } from '@/components/ui/SocialChip'
+import { pauseSmoothScroll } from '@/lib/motion/smoothScroll'
 import { socialLinks } from '@/lib/socialLinks'
 import { cn } from '@/lib/utils'
 import * as m from '@/paraglide/messages'
@@ -64,7 +65,8 @@ interface MobileMenuProps {
 
 /**
  * Full-screen, focus-trapped navigation dialog for viewports below `lg`. While open: focus moves to the close
- * button and cycles inside the dialog, Escape closes, page scroll is locked; on close focus returns to the opener.
+ * button and cycles inside the dialog, Escape closes, page scroll is locked (Lenis smooth scrolling paused too);
+ * on close focus returns to the opener.
  */
 export function MobileMenu({ id, isOpen, onClose }: MobileMenuProps) {
     const dialogRef = useRef<HTMLDialogElement>(null)
@@ -79,6 +81,7 @@ export function MobileMenu({ id, isOpen, onClose }: MobileMenuProps) {
         const previousOverflow = document.body.style.overflow
         if (!dialog.open) dialog.showModal()
         document.body.style.overflow = 'hidden'
+        const resumeSmoothScroll = pauseSmoothScroll()
         closeButtonRef.current?.focus()
 
         // The dialog only exists below `lg`; close it if the viewport grows past that.
@@ -92,6 +95,7 @@ export function MobileMenu({ id, isOpen, onClose }: MobileMenuProps) {
             desktopQuery.removeEventListener('change', handleViewportChange)
             if (dialog.open) dialog.close()
             document.body.style.overflow = previousOverflow
+            resumeSmoothScroll()
             previouslyFocused?.focus()
         }
     }, [isOpen])
@@ -103,6 +107,8 @@ export function MobileMenu({ id, isOpen, onClose }: MobileMenuProps) {
             id={id}
             aria-label={m.nav_menu_label()}
             inert={!isOpen}
+            // Wheel and touch inside the dialog scroll the dialog, never the (locked) page behind it.
+            data-lenis-prevent=""
             onClose={onClose}
             onKeyDown={(event) => {
                 if (event.key === 'Tab') trapFocus(event.nativeEvent, dialogRef.current)

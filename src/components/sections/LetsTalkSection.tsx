@@ -30,6 +30,7 @@ export function LetsTalkSection() {
                         </Eyebrow>
                         <h2
                             id="cta-heading"
+                            data-reveal="words"
                             className="font-display text-[clamp(2.625rem,3.2381vw+1.8357rem,4.75rem)] leading-none font-black tracking-[-0.034em] text-ink lg:leading-[0.98] lg:tracking-[-0.033em]"
                         >
                             {m.cta_title()}
@@ -37,14 +38,19 @@ export function LetsTalkSection() {
                     </div>
 
                     <div className="flex flex-col gap-[22px] lg:w-[22rem] lg:shrink-0 lg:gap-7 xl:w-[26.25rem]">
-                        <p className="text-lead text-ink">{m.cta_body()}</p>
-                        <ButtonLink variant="primary" to="/contact" className="w-full">
+                        <p data-reveal="fade-up" className="text-lead text-ink">
+                            {m.cta_body()}
+                        </p>
+                        <ButtonLink variant="primary" to="/contact" data-reveal="fade-up" className="w-full">
                             {m.cta_button()}
                         </ButtonLink>
-                        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b-[1.5px] border-ink pb-2.5">
+                        <div
+                            data-reveal="fade-up"
+                            className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b-[1.5px] border-ink pb-2.5"
+                        >
                             <ProtectedEmail className="font-display text-[clamp(1.375rem,0.1905vw+1.3286rem,1.5rem)] leading-[1.2] font-bold text-ink underline decoration-transparent decoration-[1.5px] underline-offset-4 transition-colors duration-200 hover:decoration-current" />
                             <p className="flex items-center gap-1.5 font-mono text-[0.75rem] leading-[1.3] tracking-[0.0375rem] text-ink-soft uppercase lg:gap-2 lg:tracking-[0.0625rem]">
-                                <span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-success" />
+                                <span aria-hidden="true" data-reveal="pulse" className="size-2 shrink-0 rounded-full bg-success" />
                                 {m.cta_status()}
                             </p>
                         </div>
@@ -54,9 +60,9 @@ export function LetsTalkSection() {
                 <div className="flex flex-col gap-6 lg:gap-7">
                     <div className="flex items-center gap-3 lg:gap-4">
                         <p className="shrink-0 font-mono text-label text-ink uppercase">{m.cta_proof_label()}</p>
-                        <span aria-hidden="true" className="h-[1.5px] flex-1 bg-ink" />
+                        <span aria-hidden="true" data-reveal="rule" className="h-[1.5px] flex-1 bg-ink" />
                     </div>
-                    <ul className="grid grid-cols-1 gap-6 md:grid-cols-3 md:gap-8 xl:gap-12">
+                    <ul data-reveal="stagger" className="grid grid-cols-1 gap-6 md:grid-cols-3 md:gap-8 xl:gap-12">
                         {STANDARDS.map((item) => (
                             <li key={item.code}>
                                 <StandardItem code={item.code} title={item.title()} description={item.description()} />

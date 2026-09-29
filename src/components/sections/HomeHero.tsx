@@ -1,7 +1,7 @@
 import { Link } from '@tanstack/react-router'
 import { preload } from 'react-dom'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
-import { ProtectedEmail } from '@/components/ProtectedEmail'
+import { useProtectedEmail } from '@/components/ProtectedEmail'
 import { MobileMenuToggle } from '@/components/layout/Navbar'
 import { NAV_ACTIVE_OPTIONS, NAV_ITEMS } from '@/components/layout/navItems'
 import { Wordmark } from '@/components/layout/Wordmark'
@@ -22,8 +22,10 @@ const pad = (key: string, width: number) => key.padEnd(width, ' ')
 const SPEC_LINE_CLASS = 'whitespace-pre-wrap'
 
 function StatusLines() {
+    const email = useProtectedEmail()
+
     return (
-        <div>
+        <div data-reveal="fade-up">
             <p className={SPEC_LINE_CLASS}>
                 {pad('STATUS', 9)}= {m.home_hero_spec_status()}
             </p>
@@ -32,8 +34,14 @@ function StatusLines() {
             </p>
             <p className={SPEC_LINE_CLASS}>
                 {pad('E-MAIL', 9)}={' '}
-                <ProtectedEmail className="underline decoration-transparent underline-offset-2 transition-colors duration-200 hover:decoration-current" />
-                ;
+                {/* The ";" is part of the link text: when the address replaces the placeholder after hydration, the text
+                    only grows or shrinks at its end, so nothing moves. */}
+                <a
+                    href={email.href}
+                    className="underline decoration-transparent underline-offset-2 transition-colors duration-200 hover:decoration-current"
+                >
+                    {`${email.display};`}
+                </a>
             </p>
         </div>
     )
@@ -50,7 +58,7 @@ function ServiceLines({ items, className }: { items: ReadonlyArray<(typeof HERO_
     return (
         <ul className={className}>
             {items.map((item) => (
-                <li key={item.index} className={`${SPEC_LINE_CLASS} uppercase`}>
+                <li key={item.index} data-reveal="type" className={`${SPEC_LINE_CLASS} uppercase`}>
                     {pad(item.index, 4)}
                     {item.label()}
                 </li>
@@ -61,7 +69,7 @@ function ServiceLines({ items, className }: { items: ReadonlyArray<(typeof HERO_
 
 function SpecRule() {
     return (
-        <p aria-hidden="true" className="overflow-hidden whitespace-nowrap text-ink-soft">
+        <p aria-hidden="true" data-reveal="type" className="overflow-hidden whitespace-nowrap text-ink-soft">
             {SPEC_RULE}
         </p>
     )
@@ -73,15 +81,15 @@ function SpecColumns() {
         <div className="hidden grid-cols-1 gap-x-10 gap-y-6 font-mono text-[0.8125rem] leading-normal tracking-[0.0125rem] text-ink lg:grid lg:max-w-[40rem] xl:grid-cols-2 lg:[@media(max-height:66rem)]:hidden">
             <div className="flex flex-col gap-2.5">
                 <div>
-                    <p className={SPEC_LINE_CLASS}>
+                    <p data-reveal="type" className={SPEC_LINE_CLASS}>
                         {pad('SELECT', 8)}
                         {m.home_hero_spec_services()}
                     </p>
-                    <p className={SPEC_LINE_CLASS}>
+                    <p data-reveal="type" className={SPEC_LINE_CLASS}>
                         {pad('FROM', 8)}
                         {SITE.domain}
                     </p>
-                    <p className={SPEC_LINE_CLASS}>
+                    <p data-reveal="type" className={SPEC_LINE_CLASS}>
                         {pad('WHERE', 8)}
                         {m.home_hero_spec_where()}
                     </p>
@@ -113,7 +121,7 @@ function HeroTopRow() {
     return (
         <div className="hidden items-start justify-between gap-8 lg:flex">
             <nav aria-label={m.nav_main_label()}>
-                <ul className="flex flex-col gap-1.5">
+                <ul data-reveal="stagger" className="flex flex-col gap-1.5">
                     {NAV_ITEMS.map((item) => (
                         <li key={item.index}>
                             <Link
@@ -125,7 +133,10 @@ function HeroTopRow() {
                                 <span aria-hidden="true" className="text-[0.8125rem] text-ink-soft">
                                     {item.index}
                                 </span>
-                                <span className="border-b-[1.5px] border-transparent text-[0.875rem] font-semibold text-ink uppercase transition-colors duration-200 group-hover:border-ink group-data-[status=active]:border-ink">
+                                <span
+                                    data-scramble-hover=""
+                                    className="border-b-[1.5px] border-transparent text-[0.875rem] font-semibold text-ink uppercase transition-colors duration-200 group-hover:border-ink group-data-[status=active]:border-ink"
+                                >
                                     {item.label()}
                                 </span>
                             </Link>
@@ -134,7 +145,7 @@ function HeroTopRow() {
                 </ul>
             </nav>
 
-            <div className="flex flex-col items-end gap-1">
+            <div data-reveal="fade-down" className="flex flex-col items-end gap-1">
                 <Link to="/" aria-label={`${SITE.name} · ${m.nav_home()}`} className="flex flex-col items-end gap-1 text-ink">
                     <span className="font-display text-[2.5rem] leading-none font-black tracking-[-0.0375em]">JANDRLÝ</span>
                     <span aria-hidden="true" className="h-[3px] w-[calc(100%-2px)] rounded-[2px] bg-current" />
@@ -164,26 +175,35 @@ export function HomeHero() {
     return (
         <section aria-labelledby="home-heading" className="bg-grain overflow-hidden">
             <div className="relative mx-auto grid max-w-page grid-cols-1 grid-rows-[auto_27.5rem_auto] md:grid-rows-[auto_min(110vw,56rem)_auto] lg:min-h-svh lg:max-w-none lg:grid-cols-[calc(var(--hero-portrait)*0.641)_calc(var(--hero-portrait)*0.359)_minmax(0,1fr)] lg:grid-rows-[1fr_auto] lg:[--hero-portrait:min(54.1667vw,72.2222svh)]">
-                <div className="col-start-1 row-start-1 flex items-center justify-between gap-6 px-gutter py-3.5 lg:hidden">
+                <div
+                    data-reveal="fade-down"
+                    className="col-start-1 row-start-1 flex items-center justify-between gap-6 px-gutter py-3.5 lg:hidden"
+                >
                     <Wordmark />
                     <MobileMenuToggle />
                 </div>
 
                 <div className="relative col-start-1 row-start-2 overflow-hidden lg:col-[1/3] lg:row-[1/3]">
-                    <picture>
-                        <source type="image/avif" srcSet={HERO_PORTRAIT.avif} />
-                        <img
-                            src={HERO_PORTRAIT.webp}
-                            width={HERO_PORTRAIT.width}
-                            height={HERO_PORTRAIT.height}
-                            alt={m.home_hero_portrait_alt()}
-                            fetchPriority="high"
-                            className="absolute inset-0 size-full object-cover"
-                        />
-                    </picture>
+                    {/* Scroll: the portrait sinks and grows as the hero leaves. Reveal: it wipes in from the top (a clip, so
+                        at rest it is pixel-identical; it is painted under the intro first, so the LCP is not delayed). */}
+                    <div data-scroll="portrait" className="absolute inset-0">
+                        <picture>
+                            <source type="image/avif" srcSet={HERO_PORTRAIT.avif} />
+                            <img
+                                data-reveal="clip-down"
+                                src={HERO_PORTRAIT.webp}
+                                width={HERO_PORTRAIT.width}
+                                height={HERO_PORTRAIT.height}
+                                alt={m.home_hero_portrait_alt()}
+                                fetchPriority="high"
+                                className="absolute inset-0 size-full object-cover"
+                            />
+                        </picture>
+                    </div>
                 </div>
 
                 <NamePlate
+                    reveal
                     meta={[m.nameplate_company_id(), m.nameplate_disciplines()]}
                     className="relative z-10 col-start-1 row-start-2 ml-[11.2821vw] self-end md:ml-11 lg:col-[1/4] lg:ml-[12%] xl:col-[2/4] xl:ml-0"
                 />
@@ -191,6 +211,7 @@ export function HomeHero() {
                 <div className="relative z-10 col-start-1 row-start-3 flex min-w-0 flex-col gap-[26px] px-gutter pt-7 pb-11 lg:col-start-3 lg:row-start-1 lg:gap-[clamp(1rem,7.4074svh-2.5rem,2.5rem)] lg:pt-[clamp(2.5rem,10svh-2.75rem,4rem)] lg:pr-[min(4.7222vw,4.25rem)] lg:pb-[17px] lg:pl-5">
                     <span
                         aria-hidden="true"
+                        data-reveal="frame"
                         className="pointer-events-none absolute top-7 right-[min(1.9444vw,1.75rem)] bottom-0 -left-5 hidden border-t-[1.5px] border-r-[1.5px] border-line lg:block"
                     />
 
@@ -206,13 +227,18 @@ export function HomeHero() {
                     </div>
 
                     <div id={HOME_CONTENT_ID} tabIndex={-1} className="flex scroll-mt-4 flex-col gap-3.5 focus:outline-none lg:gap-[18px]">
-                        <p className="font-mono text-[0.75rem] leading-normal font-semibold tracking-[0.0625rem] text-teal-ink uppercase lg:text-[0.8125rem] lg:tracking-[0.075rem]">
+                        <p
+                            data-reveal="scramble"
+                            className="font-mono text-[0.75rem] leading-normal font-semibold tracking-[0.0625rem] text-teal-ink uppercase lg:text-[0.8125rem] lg:tracking-[0.075rem]"
+                        >
                             {m.home_hero_eyebrow()}
                         </p>
-                        <h1 id="home-heading" className="text-h3 text-ink lg:max-w-[36rem]">
+                        <h1 id="home-heading" data-reveal="words" className="text-h3 text-ink lg:max-w-[36rem]">
                             {m.home_hero_title()}
                         </h1>
-                        <p className="text-body leading-normal text-ink-soft lg:max-w-[30rem]">{m.home_hero_lead()}</p>
+                        <p data-reveal="fade-up" className="text-body leading-normal text-ink-soft lg:max-w-[30rem]">
+                            {m.home_hero_lead()}
+                        </p>
                     </div>
 
                     <SpecColumns />
@@ -221,6 +247,7 @@ export function HomeHero() {
                     <div className="flex flex-col gap-4 lg:mt-auto lg:flex-row lg:flex-wrap lg:items-center lg:gap-5 xl:gap-7">
                         <div
                             aria-hidden="true"
+                            data-reveal="fade-up"
                             className="flex items-center gap-5 font-mono leading-[1.2] font-medium tracking-[0.0125rem] text-ink lg:flex-1 lg:leading-normal xl:gap-7"
                         >
                             <span className="size-2.5 shrink-0 rounded-full bg-ink xl:size-3.5" />
@@ -229,6 +256,7 @@ export function HomeHero() {
                         </div>
                         <ButtonLink
                             variant="dark"
+                            data-reveal="fade-up"
                             to="/contact"
                             iconClassName="size-5 lg:size-[18px]"
                             className="w-full justify-between px-[22px] py-[18px] leading-[1.2] tracking-[0.075rem] lg:w-auto lg:justify-center lg:px-6 lg:py-4 lg:leading-normal lg:tracking-[0.0625rem]"

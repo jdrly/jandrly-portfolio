@@ -20,8 +20,12 @@ export function Stat({ code, value, label, bordered = false, className }: StatPr
                 className,
             )}
         >
-            <p className="font-mono text-label font-normal text-ink-soft">{code}</p>
-            <p className="font-display text-stat text-ink">{value}</p>
+            <p data-reveal="scramble" className="font-mono text-label font-normal text-ink-soft">
+                {code}
+            </p>
+            <p data-reveal="count" className="font-display text-stat text-ink">
+                {value}
+            </p>
             <p className="font-mono text-label leading-[1.4] font-semibold text-ink uppercase">{label}</p>
         </div>
     )

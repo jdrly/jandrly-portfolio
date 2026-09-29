@@ -4,6 +4,7 @@ Everything the site needs outside the code, step by step. Every service here is 
 
 Checklist:
 
+- [ ] 0. Motion+ package token (builds fail without it)
 - [ ] 1. Form token secret
 - [ ] 2. Cloudflare Turnstile keys
 - [ ] 3. Resend (email delivery)
@@ -16,6 +17,21 @@ Checklist:
 - [ ] 10. Final check
 
 Do not turn on anything that asks for a card. Specifically: Vercel BotID **Deep Analysis** is paid (Pro plan, $1 per 1,000 checks). The site uses BotID **Basic**, which is free and needs no setup.
+
+## 0. Motion+ package token
+
+The animations use the paid Motion+ package (`motion-plus`, installed from Motion's private npm registry as `@motionplus/core`). Every install needs a registry token, so without this step every Vercel build and the GitHub pull request check fail at `pnpm install` with `401 Unauthorized`. The repository is public: the token must never be committed. The committed side holds no secret: `.npmrc` has only the registry line, and `vercel.json` and `.github/workflows/seo.yml` reference the `MOTION_TOKEN` variable.
+
+1. Sign in at https://motion.dev and open https://motion.dev/dashboard/tokens. Create a token (or copy the existing one). Don't paste it into chats, issues or files in the repository. The Motion AI kit sign-in (the website login used by the Motion MCP server) does not cover npm installs, so you need the token even if the MCP server works.
+2. **Vercel:** project **Settings → Environment Variables → Add**: name `MOTION_TOKEN`, the token as value, **Sensitive** on, environments **Production** and **Preview**. `vercel.json` already sets the install command that uses it, so there is nothing else to configure. Redeploy afterwards.
+3. **GitHub Actions:** repository **Settings → Secrets and variables → Actions → New repository secret**: name `MOTION_TOKEN`, the same token. The `SEO checks` workflow reads it. Pull requests from forks don't get repository secrets, so their check fails at install; your own branches work.
+4. **Your computer:** store the token once in your user-level pnpm config (outside the repository):
+    ```sh
+    pnpm config set "//api.motion.dev/npm/:_authToken" "<token>"
+    ```
+    pnpm 11 refuses tokens written into the project's `.npmrc` through `${MOTION_TOKEN}`, which is why the token lives in the user config and why Vercel and CI run the same command before installing.
+
+If the token is ever exposed (pasted somewhere public, committed), regenerate it on the tokens page and update steps 2 to 4.
 
 ## 1. Form token secret
 

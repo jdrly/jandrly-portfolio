@@ -38,6 +38,7 @@ export function Sparkles({ variant = 'tilted', className }: SparklesProps) {
             focusable="false"
             viewBox={config.viewBox}
             overflow="visible"
+            data-reveal="pop"
             className={cn('h-auto shrink-0 fill-current', config.className, className)}
         >
             {config.stars.map((transform) => (

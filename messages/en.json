@@ -210,5 +210,11 @@
     "meta_privacy_description": "What data jandrly.cz processes, why it is used, how long it is kept, and which service providers take part in the processing.",
     "lang_cs": "Čeština",
     "lang_en": "English",
-    "language_switcher_label": "Change language"
+    "language_switcher_label": "Change language",
+    "intro_loading": "Loading",
+    "intro_complete": "Loading complete",
+    "intro_initiating": "Initiating…",
+    "intro_status_loading": "Loading the page…",
+    "intro_status_done": "Page loaded.",
+    "transition_privacy": "Privacy"
 }

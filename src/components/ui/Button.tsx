@@ -59,7 +59,9 @@ function ButtonContent({
 }: Omit<ButtonStyleProps, 'className'>) {
     return (
         <>
-            <span>{children}</span>
+            <span data-scramble-hover="" data-magnetic-inner="">
+                {children}
+            </span>
             {withIcon ? (
                 <ArrowUpRight
                     aria-hidden="true"
@@ -80,7 +82,7 @@ type ButtonProps = ButtonStyleProps & Omit<ButtonHTMLAttributes<HTMLButtonElemen
 /** Native `<button>` in one of the design's button styles. Defaults to `type="button"`. */
 export function Button({ variant, size, withIcon, iconClassName, className, children, type = 'button', ...props }: ButtonProps) {
     return (
-        <button type={type} className={buttonClassName({ variant, size, className })} {...props}>
+        <button type={type} data-magnetic="" className={buttonClassName({ variant, size, className })} {...props}>
             <ButtonContent variant={variant} size={size} withIcon={withIcon} iconClassName={iconClassName}>
                 {children}
             </ButtonContent>
@@ -105,11 +107,11 @@ export function ButtonLink({ variant, size, withIcon, iconClassName, className, 
     )
 
     return to !== undefined ? (
-        <Link to={to} className={classes} {...props}>
+        <Link to={to} data-magnetic="" className={classes} {...props}>
             {content}
         </Link>
     ) : (
-        <a href={href} className={classes} {...props}>
+        <a href={href} data-magnetic="" className={classes} {...props}>
             {content}
         </a>
     )

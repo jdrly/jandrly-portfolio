@@ -282,3 +282,254 @@
         transition-duration: 0.01ms !important;
     }
 }
+
+/*
+ * Motion (src/lib/motion, src/components/motion). The runtime only ever animates transform / opacity / clip-path;
+ * these rules provide the pieces it relies on. Everything here is inert without JavaScript: the overlays only show
+ * when the head script sets `data-intro` / `data-cover` on <html>.
+ */
+
+/* Lenis smooth scroll (from lenis/dist/lenis.css). Native smooth anchors would fight it. */
+html.lenis,
+html.lenis body {
+    height: auto;
+}
+
+html.lenis {
+    scroll-behavior: auto;
+}
+
+.lenis:not(.lenis-autoToggle).lenis-stopped {
+    overflow: clip;
+}
+
+.lenis [data-lenis-prevent] {
+    overscroll-behavior: contain;
+}
+
+/* Split-text overlay (textEffects.ts): sits exactly over the transparent original text, one flex row per rendered
+   line (flex, so the lines' negative margins add up instead of collapsing). */
+.reveal-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    padding: inherit;
+    pointer-events: none;
+}
+
+.reveal-line {
+    display: block;
+    white-space: nowrap;
+}
+
+.reveal-word,
+.reveal-char {
+    display: inline-block;
+    vertical-align: top;
+}
+
+/* Forced colours (Windows high contrast): show the original text, never the animated copy. */
+@media (forced-colors: active) {
+    .reveal-overlay {
+        display: none;
+    }
+}
+
+/* Masks: lines (words mode) or words (chars mode) clip the rising pieces. The padding keeps Czech accents above
+   capitals and descenders inside the mask; the negative margin cancels it for layout. */
+.reveal-mask {
+    /* Vertical only: pieces carry sub-pixel horizontal offsets (kerning) that must not be cut off. */
+    overflow-x: visible;
+    overflow-y: clip;
+    /* Fallback room for accents above and descenders below the tight display line boxes (no JS yet: the footer
+       name, the arriving curtain). With JS, textMask.ts sets the font's measured ink overflow instead. */
+    padding: 0.45em 0.04em 0.35em;
+    margin: -0.45em -0.04em -0.35em;
+}
+
+/* Status dot ping: three rings, then still. */
+.reveal-pulse {
+    position: relative;
+}
+
+.reveal-pulse::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background-color: inherit;
+    animation: reveal-pulse 1.4s cubic-bezier(0, 0, 0.2, 1) 3;
+}
+
+@keyframes reveal-pulse {
+    from {
+        transform: scale(1);
+        opacity: 0.75;
+    }
+
+    to {
+        transform: scale(3.4);
+        opacity: 0;
+    }
+}
+
+/* Glyph reels (intro + route curtain): a 1em window over a strip of all 14 glyphs, stepped by transform. */
+.glyph-reel-window {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    overflow: clip;
+    flex-shrink: 0;
+}
+
+.glyph-reel {
+    display: block;
+    animation: glyph-reel 0.56s steps(14) infinite;
+}
+
+.glyph-reel-window:nth-child(2n) .glyph-reel {
+    animation-duration: 0.44s;
+    animation-direction: reverse;
+}
+
+.glyph-reel-window:nth-child(3n) .glyph-reel {
+    animation-duration: 0.68s;
+}
+
+/* The route curtain's reels only spin while the curtain is up. */
+.curtain:not([data-state]) .glyph-reel {
+    animation-play-state: paused;
+}
+
+html[data-cover] .curtain .glyph-reel {
+    animation-play-state: running;
+}
+
+@keyframes glyph-reel {
+    to {
+        transform: translateY(-14em);
+    }
+}
+
+/* If JavaScript never takes over (`play` / `arrive` are replaced by `run` when it does), the overlay goes away. */
+@keyframes overlay-failsafe {
+    to {
+        visibility: hidden;
+        opacity: 0;
+    }
+}
+
+/* Intro loader */
+.intro {
+    position: fixed;
+    inset: 0;
+    z-index: 80;
+    display: none;
+}
+
+html[data-intro] .intro {
+    display: block;
+}
+
+html[data-intro='play'] .intro {
+    animation: overlay-failsafe 0.01s 5s forwards;
+}
+
+.intro-layer {
+    position: absolute;
+    inset: 0;
+}
+
+/* Before hydration the bar and the readout creep on their own (same curve), JS continues from where they are. */
+@property --intro-pct {
+    syntax: '<integer>';
+    inherits: false;
+    initial-value: 0;
+}
+
+.intro-bar {
+    transform: scaleX(0);
+    transform-origin: 0 50%;
+    animation: intro-bar-creep 2.4s cubic-bezier(0.12, 0.7, 0.25, 1) forwards;
+}
+
+.intro-pct {
+    counter-reset: intro-pct var(--intro-pct);
+    animation: intro-pct-creep 2.4s cubic-bezier(0.12, 0.7, 0.25, 1) forwards;
+}
+
+/* Always three digits (007 → 100): the readout never changes width, so it never shifts. */
+@counter-style intro-pct {
+    system: extends decimal;
+    pad: 3 '0';
+}
+
+.intro-pct:not([data-js])::before {
+    content: counter(intro-pct, intro-pct);
+}
+
+@keyframes intro-bar-creep {
+    to {
+        transform: scaleX(0.6);
+    }
+}
+
+@keyframes intro-pct-creep {
+    to {
+        --intro-pct: 60;
+    }
+}
+
+/* Route curtain: hidden until a navigation (or an arriving document) needs it; blocks input while it is up. */
+.curtain {
+    position: fixed;
+    inset: 0;
+    z-index: 75;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.curtain[data-state],
+html[data-cover] .curtain {
+    visibility: visible;
+    pointer-events: auto;
+}
+
+html[data-cover='arrive'] .curtain {
+    animation: overlay-failsafe 0.01s 3s forwards;
+}
+
+.curtain-layer {
+    position: absolute;
+    inset: 0;
+    clip-path: inset(100% 0 0 0);
+}
+
+html[data-cover] .curtain-layer {
+    clip-path: none;
+}
+
+/* Services process: while the scroll-linked fill runs, the static rules dim and steps light up as it passes. */
+/* Desktop: the static teal rules dim to the track colour while their fills run over them. */
+@media (width >= 64rem) {
+    [data-scroll-active] [data-step] {
+        border-color: var(--color-line-dark);
+    }
+}
+
+[data-step] [data-step-dot],
+[data-step] [data-step-number] {
+    transition:
+        transform 0.5s var(--ease-out-soft),
+        opacity 0.5s var(--ease-out-soft);
+}
+
+[data-scroll-active] [data-step]:not([data-active]) [data-step-dot] {
+    transform: scale(0.4);
+    opacity: 0.4;
+}
+
+[data-scroll-active] [data-step]:not([data-active]) [data-step-number] {
+    opacity: 0.35;
+}

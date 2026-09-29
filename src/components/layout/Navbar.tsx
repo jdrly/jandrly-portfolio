@@ -22,7 +22,7 @@ function selectHref(location: { href: string }) {
 export function Navbar() {
     return (
         <header className="bg-grain border-b-[1.5px] border-ink">
-            <div className="container-page flex items-center justify-between gap-6 py-3.5 lg:py-[22px]">
+            <div data-reveal="fade-down" className="container-page flex items-center justify-between gap-6 py-3.5 lg:py-[22px]">
                 <Wordmark />
 
                 <nav aria-label={m.nav_main_label()} className="hidden lg:block">
@@ -38,7 +38,10 @@ export function Navbar() {
                                     <span aria-hidden="true" className="text-label font-normal text-ink-soft">
                                         {item.index}
                                     </span>
-                                    <span className="text-[0.875rem] leading-[1.3] font-semibold tracking-[0.0625rem] text-ink uppercase">
+                                    <span
+                                        data-scramble-hover=""
+                                        className="text-[0.875rem] leading-[1.3] font-semibold tracking-[0.0625rem] text-ink uppercase"
+                                    >
                                         {item.label()}
                                     </span>
                                 </Link>

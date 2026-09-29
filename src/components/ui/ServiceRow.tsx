@@ -42,6 +42,8 @@ interface ServiceRowProps {
 /**
  * Service Row — desktop: index · title + glyphs · description · code tag in one ruled row;
  * mobile (< lg): index + tag on top, then title, glyphs and description stacked.
+ * Motion: the top rule draws in, then the parts rise (`data-reveal="row"`); hovering scrambles the code tag and
+ * decodes the glyphs.
  */
 export function ServiceRow({
     index,
@@ -58,16 +60,27 @@ export function ServiceRow({
     const widths = TAG_WIDTH_CLASS[tagWidth]
 
     return (
-        <article className={cn('flex flex-col gap-3 border-t-[1.5px] border-ink py-6 lg:grid lg:gap-10 lg:py-9', widths.grid, className)}>
+        <article
+            data-reveal="row"
+            data-hover-group=""
+            className={cn('relative flex flex-col gap-3 py-6 lg:grid lg:gap-10 lg:py-9', widths.grid, className)}
+        >
+            <span aria-hidden="true" data-reveal-rule="" className="absolute inset-x-0 top-0 h-[1.5px] bg-ink" />
             <div className="flex items-center justify-between lg:contents">
-                <span className="font-mono text-index text-tan">{index}</span>
-                <CodeTag className={cn('lg:order-last lg:self-start', widths.tag)}>{code}</CodeTag>
+                <span data-reveal-part="" className="font-mono text-index text-tan">
+                    {index}
+                </span>
+                <span data-reveal-part="" className={cn('flex lg:order-last lg:self-start', widths.tag)}>
+                    <CodeTag className="lg:w-full">{code}</CodeTag>
+                </span>
             </div>
-            <div className="flex flex-col gap-3 lg:gap-2.5">
+            <div data-reveal-part="" className="flex flex-col gap-3 lg:gap-2.5">
                 <Heading className={cn('text-h4 text-ink', titleClassName)}>{title}</Heading>
                 <GlyphWord glyphs={glyphs} className="gap-[0.31em] text-[clamp(0.8125rem,0.1905vw+0.7661rem,0.9375rem)] text-tan" />
             </div>
-            <p className={cn('text-body-sm lg:text-body', DESCRIPTION_TONE_CLASS[descriptionTone])}>{description}</p>
+            <p data-reveal-part="" className={cn('text-body-sm lg:text-body', DESCRIPTION_TONE_CLASS[descriptionTone])}>
+                {description}
+            </p>
         </article>
     )
 }

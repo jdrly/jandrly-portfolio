@@ -210,5 +210,11 @@
     "meta_privacy_description": "Jaké údaje web jandrly.cz zpracovává, proč je používá, jak dlouho je uchovává a kteří poskytovatelé se na zpracování podílejí.",
     "lang_cs": "Čeština",
     "lang_en": "English",
-    "language_switcher_label": "Změnit jazyk"
+    "language_switcher_label": "Změnit jazyk",
+    "intro_loading": "Načítám",
+    "intro_complete": "Načítání dokončeno",
+    "intro_initiating": "Spouštím…",
+    "intro_status_loading": "Načítám stránku…",
+    "intro_status_done": "Stránka je načtená.",
+    "transition_privacy": "Soukromí"
 }

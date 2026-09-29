@@ -28,8 +28,10 @@ interface EyebrowProps {
 export function Eyebrow({ children, glyphs = GLYPH_WORDS.eyebrow, tone = 'tan', as: Component = 'p', className }: EyebrowProps) {
     return (
         <Component className={cn('flex items-center gap-[clamp(0.75rem,0.381vw+0.6571rem,1rem)]', TONE_CLASS[tone], className)}>
-            <span className="font-mono text-label uppercase">{children}</span>
-            <span aria-hidden="true" className="h-[1.5px] w-[clamp(2rem,3.0476vw+1.2571rem,4rem)] shrink-0 bg-current" />
+            <span data-reveal="scramble" className="font-mono text-label uppercase">
+                {children}
+            </span>
+            <span aria-hidden="true" data-reveal="rule" className="h-[1.5px] w-[clamp(2rem,3.0476vw+1.2571rem,4rem)] shrink-0 bg-current" />
             {glyphs ? <GlyphWord glyphs={glyphs} className="gap-[0.31em] text-[clamp(0.8125rem,0.1905vw+0.7661rem,0.9375rem)]" /> : null}
         </Component>
     )

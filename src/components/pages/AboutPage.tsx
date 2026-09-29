@@ -75,7 +75,10 @@ const TECH_ITEMS = TECH_STACK.map((name, index) => ({
 
 function PortraitCard() {
     return (
-        <div className="relative h-[380px] w-full shrink-0 overflow-hidden rounded-tl-[28px] border-x-[1.5px] border-t-[1.5px] border-ink md:h-auto md:w-[26rem] md:self-end md:aspect-5/6 lg:w-[min(31.25rem,40%)] lg:self-auto lg:rounded-tl-[36px]">
+        <div
+            data-reveal="clip-up"
+            className="relative h-[380px] w-full shrink-0 overflow-hidden rounded-tl-[28px] border-x-[1.5px] border-t-[1.5px] border-ink md:h-auto md:w-[26rem] md:self-end md:aspect-5/6 lg:w-[min(31.25rem,40%)] lg:self-auto lg:rounded-tl-[36px]"
+        >
             <picture>
                 <source type="image/avif" srcSet="/images/jd-portrait-illustrated.avif" />
                 <img
@@ -88,7 +91,11 @@ function PortraitCard() {
                     className="absolute inset-y-0 -left-[3%] h-full w-[106%] max-w-none object-cover lg:-left-[4%] lg:w-[108%]"
                 />
             </picture>
-            <div className="absolute top-4 right-2.5 flex flex-col items-end gap-[3px] rounded-tr-[10px] rounded-bl-[10px] border-[1.5px] border-ink bg-paper px-3 py-2 font-mono uppercase lg:top-6 lg:right-6 lg:gap-1 lg:rounded-tr-xl lg:rounded-bl-xl lg:px-3.5 lg:py-2.5">
+            <div
+                data-reveal="fade-down"
+                data-reveal-delay="0.5"
+                className="absolute top-4 right-2.5 flex flex-col items-end gap-[3px] rounded-tr-[10px] rounded-bl-[10px] border-[1.5px] border-ink bg-paper px-3 py-2 font-mono uppercase lg:top-6 lg:right-6 lg:gap-1 lg:rounded-tr-xl lg:rounded-bl-xl lg:px-3.5 lg:py-2.5"
+            >
                 <p className="text-label text-ink">{SITE.name}</p>
                 <p className="text-[0.75rem] leading-[1.3] tracking-[0.0375rem] text-ink-soft lg:tracking-[0.0625rem]">
                     {m.about_portrait_role()}
@@ -107,10 +114,12 @@ function HeroSection() {
                         <Eyebrow tone="teal" glyphs={GLYPHS.hero}>
                             {m.about_hero_eyebrow()}
                         </Eyebrow>
-                        <h1 id="about-title" className="text-h1 text-ink">
+                        <h1 id="about-title" data-reveal="words" className="text-h1 text-ink">
                             {m.about_hero_title()}
                         </h1>
-                        <p className="text-page-lead max-w-[35rem] text-ink-soft">{m.about_hero_subtitle()}</p>
+                        <p data-reveal="fade-up" className="text-page-lead max-w-[35rem] text-ink-soft">
+                            {m.about_hero_subtitle()}
+                        </p>
                         <div aria-hidden="true" className="hidden items-center gap-7 lg:flex">
                             <Barcode bars={HERO_BARS} height={36} className="h-9 w-[165px]" />
                             <Sparkles variant="level" className="w-[100px] text-teal" />
@@ -121,6 +130,7 @@ function HeroSection() {
 
                 <ul
                     aria-label={m.about_stats_label()}
+                    data-reveal="stagger"
                     className="grid grid-cols-2 border-t-[1.5px] border-ink lg:grid-cols-4 lg:border-b-[1.5px]"
                 >
                     {STATS.map((stat) => (
@@ -145,13 +155,18 @@ function ProfileSection() {
             <div className="container-page flex flex-col gap-6 pt-section pb-section-end lg:flex-row lg:gap-20">
                 <div className="flex flex-col gap-6 lg:w-[26.25rem] lg:shrink-0 lg:gap-5">
                     <Eyebrow glyphs={GLYPHS.profile}>{m.about_profile_eyebrow()}</Eyebrow>
-                    <h2 id="about-profile-title" className={cn(PROFILE_TITLE_CLASS, 'text-ink')}>
+                    <h2 id="about-profile-title" data-reveal="words" className={cn(PROFILE_TITLE_CLASS, 'text-ink')}>
                         {m.about_profile_title()}
                     </h2>
                 </div>
                 <div className="flex min-w-0 flex-1 flex-col gap-6 lg:gap-7">
-                    <p className={cn(INTRO_CLASS, 'text-ink')}>{keepHyphenatedWords(m.about_who_heading())}</p>
-                    <div className="grid gap-[22px] border-t-[1.5px] border-ink pt-[22px] md:grid-cols-3 md:gap-10 lg:pt-7">
+                    <p data-reveal="fade-up" className={cn(INTRO_CLASS, 'text-ink')}>
+                        {keepHyphenatedWords(m.about_who_heading())}
+                    </p>
+                    <div
+                        data-reveal="stagger"
+                        className="grid gap-[22px] border-t-[1.5px] border-ink pt-[22px] md:grid-cols-3 md:gap-10 lg:pt-7"
+                    >
                         {BIO.map((paragraph) => (
                             <div key={paragraph.index} className="flex flex-col gap-2 lg:gap-3">
                                 <span aria-hidden="true" className="font-mono text-label text-tan">
@@ -161,7 +176,9 @@ function ProfileSection() {
                             </div>
                         ))}
                     </div>
-                    <ArrowLink to="/services">{m.about_services_link()}</ArrowLink>
+                    <ArrowLink to="/services" reveal>
+                        {m.about_services_link()}
+                    </ArrowLink>
                 </div>
             </div>
         </section>
@@ -177,17 +194,25 @@ function ApproachSection() {
                         <Eyebrow tone="on-dark" glyphs={GLYPHS.approach}>
                             {m.about_approach_eyebrow()}
                         </Eyebrow>
-                        <h2 id="about-approach-title" className="font-display text-section-title text-paper">
+                        <h2
+                            id="about-approach-title"
+                            data-reveal="words"
+                            data-scroll="drift"
+                            className="font-display text-section-title text-paper"
+                        >
                             {m.about_approach_title()}
                         </h2>
                     </div>
-                    <p className="text-page-lead text-on-dark lg:w-[26.25rem] lg:shrink-0">{m.about_philosophy_subtitle()}</p>
+                    <p data-reveal="fade-up" className="text-page-lead text-on-dark lg:w-[26.25rem] lg:shrink-0">
+                        {m.about_philosophy_subtitle()}
+                    </p>
                 </div>
 
-                <ul className="grid gap-7 lg:grid-cols-3 lg:gap-6">
+                <ul data-reveal="cards" className="grid gap-7 lg:grid-cols-3 lg:gap-6">
                     {PRINCIPLES.map((principle) => (
                         <li
                             key={principle.code}
+                            data-hover-group=""
                             className={cn(
                                 'flex flex-col gap-4 border-[1.5px] border-line-dark px-5 pt-[22px] pb-6 lg:min-h-[300px] lg:gap-6 lg:px-7 lg:pt-7 lg:pb-9',
                                 principle.corners,
@@ -216,14 +241,16 @@ function StackSection() {
                 <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between lg:gap-10">
                     <div className="flex flex-col gap-6 lg:gap-5">
                         <Eyebrow glyphs={GLYPHS.stack}>{m.about_stack_eyebrow()}</Eyebrow>
-                        <h2 id="about-stack-title" className="font-display text-section-title text-ink">
+                        <h2 id="about-stack-title" data-reveal="words" className="font-display text-section-title text-ink">
                             {m.about_stack_title()}
                         </h2>
                     </div>
-                    <p className="text-page-lead text-ink lg:w-[26.25rem] lg:shrink-0">{m.about_tech_subtitle()}</p>
+                    <p data-reveal="fade-up" className="text-page-lead text-ink lg:w-[26.25rem] lg:shrink-0">
+                        {m.about_tech_subtitle()}
+                    </p>
                 </div>
 
-                <ul className="grid grid-cols-2 border-t-[1.5px] border-l-[1.5px] border-ink md:grid-cols-3">
+                <ul data-reveal="flip" className="grid grid-cols-2 border-t-[1.5px] border-l-[1.5px] border-ink md:grid-cols-3">
                     {TECH_ITEMS.map((tech) => (
                         <li key={tech.name} className="flex min-w-0">
                             <TechCell
