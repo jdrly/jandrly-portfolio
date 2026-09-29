@@ -157,9 +157,12 @@ export function HomeHero() {
     // the module preloads, so its download starts first. Browsers without AVIF skip it and load the WebP <img>.
     preload(HERO_PORTRAIT.avif, { as: 'image', type: 'image/avif', fetchPriority: 'high' })
 
+    // Up to the 90rem page width the columns keep the design's 500 / 280 / 660 split. Wider than that, the portrait
+    // column stretches to the viewport's left edge (50% − 13.75rem is 500px at 1440px) and a fourth, empty column keeps
+    // the text column aligned with the rest of the page.
     return (
         <section aria-labelledby="home-heading" className="bg-grain overflow-hidden">
-            <div className="relative mx-auto grid max-w-page grid-cols-1 grid-rows-[auto_27.5rem_auto] md:grid-rows-[auto_min(110vw,56rem)_auto] lg:grid-cols-[minmax(0,500fr)_minmax(0,280fr)_minmax(0,660fr)] lg:grid-rows-[1fr_auto]">
+            <div className="relative mx-auto grid max-w-page grid-cols-1 grid-rows-[auto_27.5rem_auto] md:grid-rows-[auto_min(110vw,56rem)_auto] lg:grid-cols-[minmax(0,500fr)_minmax(0,280fr)_minmax(0,660fr)] lg:grid-rows-[1fr_auto] min-[90rem]:max-w-none min-[90rem]:grid-cols-[calc(50%-13.75rem)_17.5rem_41.25rem_minmax(0,1fr)]">
                 <div className="col-start-1 row-start-1 flex items-center justify-between gap-6 px-gutter py-3.5 lg:hidden">
                     <Wordmark />
                     <MobileMenuToggle />
