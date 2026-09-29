@@ -32,6 +32,6 @@ if (someCondition) {
 }
 ```
 
-This matters when `getFlag` hits the network, a feature-flag service, or `React.cache` / DB work: skipping it when `someCondition` is false removes that cost on the cold path.
+This matters when `getFlag` hits the network, a feature-flag service, or cached DB work: skipping it when `someCondition` is false removes that cost on the cold path.
 
 Keep the original order if `someCondition` is expensive, depends on the flag, or you must run side effects in a fixed order.

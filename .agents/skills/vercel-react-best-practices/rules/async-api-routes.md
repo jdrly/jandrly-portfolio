@@ -2,12 +2,12 @@
 title: Prevent Waterfall Chains in API Routes
 impact: CRITICAL
 impactDescription: 2-10× improvement
-tags: api-routes, server-actions, waterfalls, parallelization
+tags: api-routes, server-functions, waterfalls, parallelization
 ---
 
 ## Prevent Waterfall Chains in API Routes
 
-In API routes and Server Actions, start independent operations immediately, even if you don't await them yet.
+In API routes (server routes) and server functions (`createServerFn`), start independent operations immediately, even if you don't await them yet.
 
 **Incorrect (config waits for auth, data waits for both):**
 

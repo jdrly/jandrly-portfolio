@@ -1,6 +1,6 @@
 ---
 name: vercel-react-view-transitions
-description: Guide for implementing smooth, native-feeling animations using React's View Transition API (`<ViewTransition>` component, `addTransitionType`, and CSS view transition pseudo-elements). Use this skill whenever the user wants to add page transitions, animate route changes, create shared element animations, animate enter/exit of components, animate list reorder, implement directional (forward/back) navigation animations, or integrate view transitions in Next.js. Also use when the user mentions view transitions, `startViewTransition`, `ViewTransition`, transition types, or asks about animating between UI states in React without third-party animation libraries.
+description: Guide for implementing smooth, native-feeling animations using React's View Transition API (`<ViewTransition>` component, `addTransitionType`, and CSS view transition pseudo-elements). Use this skill whenever the user wants to add page transitions, animate route changes, create shared element animations, animate enter/exit of components, animate list reorder, or implement directional (forward/back) navigation animations. Also use when the user mentions view transitions, `startViewTransition`, `ViewTransition`, transition types, or asks about animating between UI states in React without third-party animation libraries.
 license: MIT
 metadata:
   author: vercel
@@ -42,8 +42,7 @@ Reserve directional slides for hierarchical navigation (list → detail) and ord
 
 ## Availability
 
-- **Next.js:** Do **not** install `react@canary` — the App Router already bundles React canary internally. `ViewTransition` works out of the box. `npm ls react` may show a stable-looking version; this is expected.
-- **Without Next.js:** Install `react@canary react-dom@canary` (`ViewTransition` is not in stable React).
+- **React:** `ViewTransition` and `addTransitionType` are exported from stable `react` 19.3+. On older React versions, install `react@canary react-dom@canary`.
 - Browser support: Chromium 111+, Firefox 144+, Safari 18.2+. Graceful degradation on unsupported browsers.
 
 ---
@@ -296,12 +295,6 @@ When a parent VT exits, nested VTs inside it do **not** fire their own enter/exi
 
 ---
 
-## Next.js Integration
-
-For Next.js setup (`experimental.viewTransition` flag, `transitionTypes` prop on `next/link`, App Router patterns, Server Components), see `references/nextjs.md`.
-
----
-
 ## Accessibility
 
 Always add the reduced motion CSS from `references/css-recipes.md` to your global stylesheet.
@@ -313,7 +306,6 @@ Always add the reduced motion CSS from `references/css-recipes.md` to your globa
 - **`references/implementation.md`** — Step-by-step implementation workflow.
 - **`references/patterns.md`** — Patterns, animation timing, events API, troubleshooting.
 - **`references/css-recipes.md`** — Ready-to-use CSS animation recipes.
-- **`references/nextjs.md`** — Next.js App Router patterns and Server Component details.
 
 ## Full Compiled Document
 

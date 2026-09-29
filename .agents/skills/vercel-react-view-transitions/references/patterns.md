@@ -5,8 +5,6 @@
 `useDeferredValue` makes filter updates a transition, activating `<ViewTransition>`:
 
 ```tsx
-'use client';
-
 import { useDeferredValue, useState, ViewTransition, Suspense } from 'react';
 
 export default function SearchableGrid({ itemsPromise }) {
@@ -41,8 +39,6 @@ Per-item `<ViewTransition name={...}>` inside a deferred list triggers cross-fad
 Toggle between grid and detail view with shared element morph:
 
 ```tsx
-'use client';
-
 import { useState, useRef, startTransition, ViewTransition } from 'react';
 
 export default function ItemGrid({ items }) {

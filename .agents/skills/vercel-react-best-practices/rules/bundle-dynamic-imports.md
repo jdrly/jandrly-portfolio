@@ -2,12 +2,12 @@
 title: Dynamic Imports for Heavy Components
 impact: CRITICAL
 impactDescription: directly affects TTI and LCP
-tags: bundle, dynamic-import, code-splitting, next-dynamic
+tags: bundle, dynamic-import, code-splitting, react-lazy
 ---
 
 ## Dynamic Imports for Heavy Components
 
-Use `next/dynamic` to lazy-load large components not needed on initial render.
+Use `React.lazy` with a `Suspense` boundary to lazy-load large components not needed on initial render.
 
 **Incorrect (Monaco bundles with main chunk ~300KB):**
 
@@ -22,14 +22,19 @@ function CodePanel({ code }: { code: string }) {
 **Correct (Monaco loads on demand):**
 
 ```tsx
-import dynamic from 'next/dynamic'
+import { lazy, Suspense } from 'react'
 
-const MonacoEditor = dynamic(
-  () => import('./monaco-editor').then(m => m.MonacoEditor),
-  { ssr: false }
+const MonacoEditor = lazy(() =>
+  import('./monaco-editor').then(m => ({ default: m.MonacoEditor }))
 )
 
 function CodePanel({ code }: { code: string }) {
-  return <MonacoEditor value={code} />
+  return (
+    <Suspense fallback={<EditorSkeleton />}>
+      <MonacoEditor value={code} />
+    </Suspense>
+  )
 }
 ```
+
+For client-only components (browser APIs during render), render the lazy component only after mount, as in [Defer Non-Critical Third-Party Libraries](./bundle-defer-third-party.md). With TanStack Router, route components are code-split automatically when `autoCodeSplitting` is enabled.
