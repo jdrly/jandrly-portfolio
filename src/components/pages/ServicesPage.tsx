@@ -1,202 +1,154 @@
-import { m as motion } from 'framer-motion'
-import { AppWindow, Globe, Server, Smartphone, Workflow, Wrench } from 'lucide-react'
-import { PageHero } from './PageHero'
-import { LetsTalkSection } from '@/components/sections'
-import { FadeIn, PageTransition, ScaleOnHover, SlideIn, StaggerContainer, StaggerItem, smoothEase } from '@/components/motion'
+import type { GlyphId } from '@/components/ui/GlyphWord'
+import { LetsTalkSection } from '@/components/sections/LetsTalkSection'
+import { ArrowLink } from '@/components/ui/ArrowLink'
+import { Eyebrow } from '@/components/ui/Eyebrow'
+import { ProcessStep } from '@/components/ui/ProcessStep'
+import { ServiceRow } from '@/components/ui/ServiceRow'
+import { StarOrnament } from '@/components/ui/StarOrnament'
+import { cn } from '@/lib/utils'
 import * as m from '@/paraglide/messages'
 
-function useServices() {
-    return [
-        {
-            icon: AppWindow,
-            title: m.service_webapp_title(),
-            description: m.service_webapp_desc(),
-        },
-        {
-            icon: Server,
-            title: m.service_backend_title(),
-            description: m.service_backend_desc(),
-        },
-        {
-            icon: Workflow,
-            title: m.service_automation_title(),
-            description: m.service_automation_desc(),
-        },
-        {
-            icon: Globe,
-            title: m.service_frontend_title(),
-            description: m.service_frontend_desc(),
-        },
-        {
-            icon: Smartphone,
-            title: m.service_mobile_title(),
-            description: m.service_mobile_desc(),
-        },
-        {
-            icon: Wrench,
-            title: m.service_strategy_title(),
-            description: m.service_strategy_desc(),
-        },
-    ]
-}
+const GLYPHS = {
+    areas: [10, 11, 2, 3],
+    process: [0, 12, 1, 2],
+} as const satisfies Record<string, ReadonlyArray<GlyphId>>
 
-function useProcessSteps() {
-    return [
-        {
-            number: '01',
-            title: m.process_step_1_title(),
-            description: m.process_step_1_desc(),
-        },
-        {
-            number: '02',
-            title: m.process_step_2_title(),
-            description: m.process_step_2_desc(),
-        },
-        {
-            number: '03',
-            title: m.process_step_3_title(),
-            description: m.process_step_3_desc(),
-        },
-        {
-            number: '04',
-            title: m.process_step_4_title(),
-            description: m.process_step_4_desc(),
-        },
-    ]
-}
+const AREAS: ReadonlyArray<{
+    code: string
+    glyphs: ReadonlyArray<GlyphId>
+    title: () => string
+    description: () => string
+}> = [
+    { code: 'WEB.APP', glyphs: [10, 11, 2], title: m.services_area_webapp_title, description: m.services_area_webapp_desc },
+    { code: 'SYS.API', glyphs: [12, 6, 13, 3], title: m.services_area_backend_title, description: m.services_area_backend_desc },
+    { code: 'AUTO.OPS', glyphs: [5, 4, 0], title: m.services_area_automation_title, description: m.services_area_automation_desc },
+    { code: 'WEB.CMS', glyphs: [7, 9, 8], title: m.services_area_web_title, description: m.services_area_web_desc },
+    { code: 'APP.OS', glyphs: [2, 1, 4], title: m.services_area_apps_title, description: m.services_area_apps_desc },
+    { code: 'TECH.AUDIT', glyphs: [13, 0, 3, 12], title: m.services_area_consulting_title, description: m.services_area_consulting_desc },
+]
 
-function ServiceHero() {
-    return (
-        <PageHero label={m.services_label()} subtitle={m.services_subtitle()}>
-            {m.services_heading_1()} <br />
-            <span className="text-accent">{m.services_heading_2()}</span>
-        </PageHero>
-    )
-}
+const STEPS = [
+    { number: '01', title: m.process_step_1_title, description: m.process_step_1_desc },
+    { number: '02', title: m.process_step_2_title, description: m.process_step_2_desc },
+    { number: '03', title: m.process_step_3_title, description: m.process_step_3_desc },
+    { number: '04', title: m.process_step_4_title, description: m.process_step_4_desc },
+] as const
 
-interface ServiceCardProps {
-    icon: React.ComponentType<{ size?: number }>
-    title: string
-    description: string
-}
+const SPEC_KEYWORD_WIDTH = 8
 
-function ServiceCard({ icon: Icon, title, description }: ServiceCardProps) {
-    return (
-        <ScaleOnHover scale={1.01}>
-            <motion.div
-                className="group relative overflow-hidden rounded-3xl border border-border-subtle bg-bg-card p-8 transition-colors hover:border-accent/50 will-change-transform"
-                whileHover={{ y: -5 }}
-                transition={{ duration: 0.3, ease: smoothEase }}
-            >
-                <div
-                    className="absolute inset-0 bg-linear-to-br from-accent/5 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-                    aria-hidden="true"
-                />
-
-                <div className="relative z-10">
-                    <motion.div
-                        className="mb-8 flex h-14 w-14 items-center justify-center rounded-2xl border border-border bg-bg-elevated transition-[border-color,color,transform] duration-300 group-hover:border-accent group-hover:text-accent"
-                        aria-hidden="true"
-                        whileHover={{ scale: 1.1, rotate: 5 }}
-                        transition={{ duration: 0.3, ease: smoothEase }}
-                    >
-                        <Icon size={28} aria-hidden="true" />
-                    </motion.div>
-
-                    <h3 className="mb-4 text-2xl font-bold md:text-3xl">{title}</h3>
-
-                    <p className="leading-relaxed text-text-muted">{description}</p>
-                </div>
-            </motion.div>
-        </ScaleOnHover>
-    )
-}
-
-function ServicesGrid() {
-    const services = useServices()
+/** Mono "query" block under the hero: SQL lines (decorative) and the result summary. */
+function HeroSpec({ className }: { className?: string }) {
+    const lines = [
+        ['SELECT', '*'],
+        ['FROM', m.services_spec_table()],
+        ['WHERE', m.services_spec_condition()],
+    ] as const
 
     return (
-        <section aria-labelledby="services-grid-heading" className="px-4 py-16 sm:px-6 sm:py-24">
-            <h2 id="services-grid-heading" className="sr-only">
-                {m.services_grid_heading()}
-            </h2>
-            <StaggerContainer staggerDelay={0.15} className="mx-auto grid max-w-7xl grid-cols-1 gap-6 md:grid-cols-2">
-                {services.map((service) => (
-                    <StaggerItem key={service.title}>
-                        <ServiceCard icon={service.icon} title={service.title} description={service.description} />
-                    </StaggerItem>
+        <div className={cn('flex flex-col gap-1.5 border-ink font-mono lg:gap-2.5', className)}>
+            <div aria-hidden="true" className="flex flex-col gap-1.5 text-code leading-[1.3] whitespace-pre text-ink lg:gap-2.5">
+                {lines.map(([keyword, value]) => (
+                    <span key={keyword}>
+                        {keyword.padEnd(SPEC_KEYWORD_WIDTH)}
+                        {value}
+                    </span>
                 ))}
-            </StaggerContainer>
+            </div>
+            <p className="text-label text-tan uppercase">
+                <span aria-hidden="true">→ </span>
+                {m.services_spec_result()}
+            </p>
+        </div>
+    )
+}
+
+function HeroSection() {
+    return (
+        <section aria-labelledby="services-title" className="bg-grain">
+            <div className="container-page flex flex-col gap-[22px] pt-7 pb-12 lg:flex-row lg:items-end lg:gap-20 lg:pt-[88px] lg:pb-section">
+                <div className="flex min-w-0 flex-1 flex-col gap-[22px] lg:gap-7">
+                    <div className="flex items-center justify-between gap-4">
+                        <Eyebrow>{m.services_hero_eyebrow()}</Eyebrow>
+                        <StarOrnament variant="compact" className="lg:hidden" />
+                    </div>
+                    <h1 id="services-title" className="text-h1 text-ink xl:text-wrap">
+                        {m.services_hero_title()}
+                    </h1>
+                    <p className="text-page-lead max-w-[36.25rem] text-ink-soft">{m.services_subtitle()}</p>
+                    <HeroSpec className="border-y-[1.5px] py-3.5 lg:hidden" />
+                </div>
+                <div className="hidden w-[min(25rem,34%)] shrink-0 flex-col items-end gap-8 lg:flex">
+                    <StarOrnament variant="inner-ring" />
+                    <HeroSpec className="w-full border-t-[1.5px] pt-4" />
+                </div>
+            </div>
         </section>
     )
 }
 
-interface ProcessStepProps {
-    number: string
-    title: string
-    description: string
-    isLast?: boolean
-    index: number
-}
-
-function ProcessStep({ number, title, description, isLast = false, index }: ProcessStepProps) {
+function AreasSection() {
     return (
-        <SlideIn direction="left" delay={index * 0.1}>
-            <motion.div
-                className={`group flex gap-6 py-12 md:gap-10 ${isLast ? '' : 'border-b border-border-subtle'}`}
-                whileHover={{ x: 10 }}
-                transition={{ duration: 0.3, ease: smoothEase }}
-            >
-                <span className="font-mono text-4xl font-bold tabular-nums text-border-subtle transition-colors duration-500 group-hover:text-accent md:text-6xl">
-                    {number}
-                </span>
-
-                <div className="pt-2 md:pt-4">
-                    <h3 className="mb-4 text-2xl font-bold md:text-3xl">{title}</h3>
-                    <p className="max-w-xl text-lg leading-relaxed text-text-muted">{description}</p>
+        <section aria-labelledby="services-areas-title" className="bg-grain">
+            <div className="container-page flex flex-col gap-7 pt-4 pb-section-end lg:gap-14 lg:pt-10">
+                <div className="flex flex-col gap-7 lg:gap-5">
+                    <Eyebrow glyphs={GLYPHS.areas}>{m.services_areas_eyebrow()}</Eyebrow>
+                    <h2 id="services-areas-title" className="max-w-[47.5rem] text-h2 text-ink">
+                        {m.services_areas_title()}
+                    </h2>
                 </div>
-            </motion.div>
-        </SlideIn>
+                <ul className="border-b-[1.5px] border-ink">
+                    {AREAS.map((area, index) => (
+                        <li key={area.code}>
+                            <ServiceRow
+                                index={String(index + 1).padStart(2, '0')}
+                                title={area.title()}
+                                description={area.description()}
+                                code={area.code}
+                                glyphs={area.glyphs}
+                                tagWidth="lg"
+                                descriptionTone="soft"
+                                titleClassName="xl:text-wrap"
+                            />
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        </section>
     )
 }
 
 function ProcessSection() {
-    const processSteps = useProcessSteps()
-
     return (
-        <section aria-labelledby="process-heading" className="bg-[#0a0a0a] px-4 py-16 sm:px-6 sm:py-24 lg:py-32">
-            <div className="mx-auto max-w-5xl">
-                <div className="mb-16">
-                    <FadeIn>
-                        <div className="mb-8 flex items-center gap-3">
-                            <span className="h-px w-12 bg-border" aria-hidden="true" />
-                            <span className="text-sm font-medium uppercase tracking-widest text-accent">{m.process_label()}</span>
-                        </div>
-                    </FadeIn>
-
-                    <FadeIn delay={0.1}>
-                        <h2 id="process-heading" className="mb-6 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl">
-                            {m.process_heading()}
+        <section aria-labelledby="services-process-title" className="bg-grain-dark">
+            <div className="container-page flex flex-col gap-7 pt-section pb-section-end lg:gap-[clamp(1.75rem,4.1905vw+0.7286rem,4.5rem)]">
+                <div className="flex flex-col gap-7 lg:flex-row lg:items-end lg:justify-between lg:gap-10">
+                    <div className="flex flex-col gap-7 lg:gap-5">
+                        <Eyebrow tone="on-dark" glyphs={GLYPHS.process}>
+                            {m.services_process_eyebrow()}
+                        </Eyebrow>
+                        <h2 id="services-process-title" className="font-display text-section-title text-paper">
+                            {m.services_process_title()}
                         </h2>
-                    </FadeIn>
-
-                    <FadeIn delay={0.2}>
-                        <p className="max-w-2xl text-xl leading-relaxed text-text-muted">{m.process_subtitle()}</p>
-                    </FadeIn>
+                    </div>
+                    <p className="text-page-lead text-on-dark lg:w-[26.25rem] lg:shrink-0">{m.process_subtitle()}</p>
                 </div>
 
-                <div>
-                    {processSteps.map((step, index) => (
+                <ol className="flex flex-col lg:grid lg:grid-cols-4 lg:gap-8">
+                    {STEPS.map((step, index) => (
                         <ProcessStep
                             key={step.number}
+                            as="li"
                             number={step.number}
-                            title={step.title}
-                            description={step.description}
-                            isLast={index === processSteps.length - 1}
-                            index={index}
+                            title={step.title()}
+                            description={step.description()}
+                            className={index < STEPS.length - 1 ? 'pb-7 lg:pb-0' : undefined}
                         />
                     ))}
-                </div>
+                </ol>
+
+                <ArrowLink to="/about" tone="on-dark">
+                    {m.services_about_link()}
+                </ArrowLink>
             </div>
         </section>
     )
@@ -204,11 +156,11 @@ function ProcessSection() {
 
 export function ServicesPage() {
     return (
-        <PageTransition>
-            <ServiceHero />
-            <ServicesGrid />
+        <>
+            <HeroSection />
+            <AreasSection />
             <ProcessSection />
             <LetsTalkSection />
-        </PageTransition>
+        </>
     )
 }
