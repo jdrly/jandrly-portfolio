@@ -40,7 +40,15 @@ jobs:
 
             - name: Wait until the production domain serves this deployment's key file
               run: |
-                  key_file=$(find public -maxdepth 1 -regex '.*/[0-9a-f]\{32\}\.txt' -exec basename {} \;)
+                  key_file=""
+                  for file in public/*.txt; do
+                    name=$(basename "$file")
+                    if [[ $name =~ ^[0-9a-f]{32}\.txt$ ]]; then key_file=$name; fi
+                  done
+                  if [ -z "$key_file" ]; then
+                    echo "No IndexNow key file (32 hex characters + .txt) in public/" >&2
+                    exit 1
+                  fi
                   for _ in $(seq 1 20); do
                     if [ "$(curl -fsS "$SITE/$key_file" || true)" = "${key_file%.txt}" ]; then exit 0; fi
                     sleep 15
