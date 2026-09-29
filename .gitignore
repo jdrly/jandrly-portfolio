@@ -16,3 +16,7 @@ mcp-todos.json
 .cursor/
 portfolio_old/
 .vercel
+
+# Local agent tooling (Motion AI kit etc.)
+.claude/
+.mcp.json

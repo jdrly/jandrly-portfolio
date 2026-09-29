@@ -29,19 +29,30 @@ export default function RootLayout({ children }) {
 **Correct (loads after hydration):**
 
 ```tsx
-import dynamic from 'next/dynamic'
+import { lazy, Suspense, useEffect, useState } from 'react'
 
-const Analytics = dynamic(
-  () => import('@vercel/analytics/react').then(m => m.Analytics),
-  { ssr: false }
+const Analytics = lazy(() =>
+  import('@vercel/analytics/react').then(m => ({ default: m.Analytics }))
 )
+
+// Renders nothing during SSR/hydration, then loads the chunk on the client
+function DeferredAnalytics() {
+  const [hydrated, setHydrated] = useState(false)
+  useEffect(() => setHydrated(true), [])
+
+  return hydrated ? (
+    <Suspense fallback={null}>
+      <Analytics />
+    </Suspense>
+  ) : null
+}
 
 export default function RootLayout({ children }) {
   return (
     <html>
       <body>
         {children}
-        <Analytics />
+        <DeferredAnalytics />
       </body>
     </html>
   )

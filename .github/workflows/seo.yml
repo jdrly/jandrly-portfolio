@@ -1,0 +1,73 @@
+# Pull request checks: lint, types, unit tests, then a production build served locally and crawled by
+# `pnpm seo:check` (sitemap, titles, descriptions, canonical, hreflang, JSON-LD, links, H1, alt, 404) plus
+# Lighthouse accessibility / best-practices / SEO thresholds. Free: the repository is public, so GitHub-hosted
+# runner minutes cost nothing.
+#
+# No secrets are needed: FORM_TOKEN_SECRET, TURNSTILE_SECRET_KEY, RESEND_* and UPSTASH_* are read at runtime by
+# the contact form endpoint only, which this workflow never calls.
+name: SEO checks
+
+on:
+    pull_request:
+    workflow_dispatch:
+
+permissions:
+    contents: read
+
+concurrency:
+    group: seo-${{ github.ref }}
+    cancel-in-progress: true
+
+jobs:
+    check:
+        runs-on: ubuntu-latest
+        timeout-minutes: 20
+        env:
+            # Nitro would otherwise pick a preset from the CI environment; the check needs the plain Node server.
+            NITRO_PRESET: node-server
+            # Cloudflare's public always-pass test sitekey, so the contact page renders like production.
+            VITE_TURNSTILE_SITE_KEY: 1x00000000000000000000AA
+            PORT: 3000
+        steps:
+            - uses: actions/checkout@v5
+              with:
+                  # Full history: the sitemap's <lastmod> comes from `git log` at build time.
+                  fetch-depth: 0
+
+            - uses: pnpm/action-setup@v4
+              with:
+                  version: 11.21.0
+
+            - uses: actions/setup-node@v5
+              with:
+                  node-version: 24
+                  cache: pnpm
+
+            - run: pnpm install --frozen-lockfile
+
+            # Build first: it generates src/paraglide and the route tree that lint, tsc and the tests import.
+            - run: pnpm build
+
+            - run: pnpm lint
+
+            - run: pnpm exec tsc --noEmit
+
+            - run: pnpm test
+
+            - name: Start production server
+              run: |
+                  nohup node .output/server/index.mjs > server.log 2>&1 &
+                  for _ in $(seq 1 30); do
+                    if curl -fsS -o /dev/null "http://localhost:${PORT}/"; then exit 0; fi
+                    sleep 1
+                  done
+                  cat server.log
+                  exit 1
+
+            - name: Crawl and check SEO (+ Lighthouse)
+              # Performance is reported but not enforced: shared CI runners are too noisy for a stable score.
+              run: pnpm seo:check "http://localhost:${PORT}" --lighthouse --lh-min=performance:0,accessibility:0.95,best-practices:0.95,seo:0.95
+
+            - name: Server log
+              if: failure()
+              run: cat server.log || true

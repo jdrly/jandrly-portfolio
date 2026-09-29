@@ -7,13 +7,13 @@ tags: async, suspense, streaming, layout-shift
 
 ## Strategic Suspense Boundaries
 
-Instead of awaiting data in async components before returning JSX, use Suspense boundaries to show the wrapper UI faster while data loads.
+Instead of blocking the whole page on data (awaiting everything in a route loader or suspending at the top of the page), push data reads down behind Suspense boundaries to show the wrapper UI faster while data loads.
 
 **Incorrect (wrapper blocked by data fetching):**
 
 ```tsx
-async function Page() {
-  const data = await fetchData() // Blocks entire page
+function Page() {
+  const { data } = useSuspenseQuery(dataQuery) // Suspends entire page
   
   return (
     <div>
@@ -48,8 +48,8 @@ function Page() {
   )
 }
 
-async function DataDisplay() {
-  const data = await fetchData() // Only blocks this component
+function DataDisplay() {
+  const { data } = useSuspenseQuery(dataQuery) // Only suspends this component
   return <div>{data.content}</div>
 }
 ```
@@ -59,9 +59,14 @@ Sidebar, Header, and Footer render immediately. Only DataDisplay waits for data.
 **Alternative (share promise across components):**
 
 ```tsx
+// Route loader starts the fetch immediately, but doesn't await it
+export const Route = createFileRoute('/dashboard')({
+  loader: () => ({ dataPromise: fetchData() }),
+  component: Page,
+})
+
 function Page() {
-  // Start fetch immediately, but don't await
-  const dataPromise = fetchData()
+  const { dataPromise } = Route.useLoaderData()
   
   return (
     <div>
@@ -87,7 +92,7 @@ function DataSummary({ dataPromise }: { dataPromise: Promise<Data> }) {
 }
 ```
 
-Both components share the same promise, so only one fetch occurs. Layout renders immediately while both components wait together.
+Both components share the same promise, so only one fetch occurs. Layout renders immediately while both components wait together. The promise must be stable across renders (created in a loader or cached), never created during render.
 
 **When NOT to use this pattern:**
 

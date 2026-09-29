@@ -1,7 +1,10 @@
 {
+    "id": "/",
+    "lang": "cs",
+    "dir": "ltr",
     "short_name": "Jandrly",
-    "name": "Jan Drlý | Full-Stack Developer",
-    "description": "Portfolio of Jan Drlý - Full-Stack Developer specializing in clean, scalable code",
+    "name": "Jan Drlý | Full-stack vývojář",
+    "description": "Jan Drlý, full-stack vývojář. Weby, aplikace a integrace na míru.",
     "icons": [
         {
             "src": "/icon-192.png?v=20260713d",
@@ -20,7 +23,8 @@
         }
     ],
     "start_url": "/",
+    "scope": "/",
     "display": "standalone",
-    "theme_color": "#000000",
-    "background_color": "#000000"
+    "theme_color": "#e6ecea",
+    "background_color": "#e6ecea"
 }

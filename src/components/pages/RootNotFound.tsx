@@ -1,44 +1,32 @@
-import { Link } from '@tanstack/react-router'
+import { ButtonLink } from '@/components/ui/Button'
+import { Eyebrow } from '@/components/ui/Eyebrow'
+import { StarOrnament } from '@/components/ui/StarOrnament'
+import * as m from '@/paraglide/messages'
 
-import { getLocale, localizeHref } from '@/paraglide/runtime'
-
+/** 404 — no design frame; built from the page-hero language (mono index, eyebrow, display title, lead, CTA). */
 export function RootNotFound() {
-    const locale = getLocale()
-    const copy =
-        locale === 'cs'
-            ? {
-                  title: 'Stránka nenalezena',
-                  description: 'Tahle adresa nevede na existující stránku.',
-                  action: 'Zpět na úvod',
-              }
-            : {
-                  title: 'Page not found',
-                  description: 'This address does not point to an existing page.',
-                  action: 'Back home',
-              }
-
     return (
-        <section className="relative flex min-h-[70vh] items-center justify-center overflow-hidden bg-bg px-4 py-24 text-center sm:px-6">
-            <div
-                className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(255,107,80,0.08),transparent_70%)]"
-                aria-hidden="true"
-            />
-            <div className="relative z-10 mx-auto max-w-3xl">
-                <div className="mb-8 flex items-center justify-center gap-3">
-                    <span className="h-px w-12 bg-border" aria-hidden="true" />
-                    <span className="text-sm font-medium tracking-widest text-text-muted uppercase">404</span>
-                    <span className="h-px w-12 bg-border" aria-hidden="true" />
+        <section aria-labelledby="notfound-title" className="bg-grain">
+            <div className="container-page flex min-h-[70vh] flex-col justify-center gap-5 py-section lg:gap-7">
+                <div className="flex items-end justify-between gap-6">
+                    <p
+                        aria-hidden="true"
+                        className="font-mono text-[clamp(4.5rem,7.619vw+2.643rem,9.5rem)] leading-none font-medium tracking-[-0.04em] text-teal-ink"
+                    >
+                        404
+                    </p>
+                    <StarOrnament className="hidden size-[clamp(6rem,4.5vw+2.5rem,9.375rem)] md:block" />
                 </div>
-                <h1 className="mb-6 text-5xl font-bold tracking-tight text-white sm:text-7xl md:text-8xl">{copy.title}</h1>
-                <p className="mx-auto mb-10 max-w-2xl text-lg leading-relaxed text-balance text-text-muted sm:text-xl">
-                    {copy.description}
-                </p>
-                <Link
-                    to={localizeHref('/')}
-                    className="inline-flex rounded-full bg-accent px-6 py-3 text-sm font-bold tracking-wide text-black uppercase transition-colors hover:bg-accent-hover"
-                >
-                    {copy.action}
-                </Link>
+                <div className="flex flex-col gap-5 border-t-[1.5px] border-ink pt-5 lg:gap-7 lg:pt-7">
+                    <Eyebrow tone="teal">{m.notfound_eyebrow()}</Eyebrow>
+                    <h1 id="notfound-title" className="max-w-[56.25rem] font-display text-h1 text-ink">
+                        {m.notfound_title()}
+                    </h1>
+                    <p className="max-w-160 text-lead text-ink-soft">{m.notfound_text()}</p>
+                    <ButtonLink to="/" className="mt-2">
+                        {m.notfound_button()}
+                    </ButtonLink>
+                </div>
             </div>
         </section>
     )

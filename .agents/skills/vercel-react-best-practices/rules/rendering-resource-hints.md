@@ -9,7 +9,7 @@ tags: rendering, preload, preconnect, prefetch, resource-hints
 
 **Impact: HIGH (reduces load time for critical resources)**
 
-React DOM provides APIs to hint the browser about resources it will need. These are especially useful in server components to start loading resources before the client even receives the HTML.
+React DOM provides APIs to hint the browser about resources it will need. These are especially useful during server rendering to start loading resources before the client even receives the full HTML.
 
 - **`prefetchDNS(href)`**: Resolve DNS for a domain you expect to connect to
 - **`preconnect(href)`**: Establish connection (DNS + TCP + TLS) to a server

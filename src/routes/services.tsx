@@ -1,14 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { ServicesPage } from '@/components/pages/ServicesPage'
-import { createSeoHead } from '@/lib/seo'
+import { createPageHead } from '@/lib/pageHead'
 import * as m from '@/paraglide/messages'
 
 export const Route = createFileRoute('/services')({
-    head: () =>
-        createSeoHead({
-            title: m.meta_services_title(),
-            description: m.meta_services_description(),
-            path: '/services',
-        }),
+    head: () => createPageHead('/services', m.meta_services_title(), m.meta_services_description()),
     component: ServicesPage,
 })

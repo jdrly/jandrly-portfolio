@@ -1,36 +1,32 @@
-import { m as motion } from 'framer-motion'
 import { Mail, MapPin, Phone } from 'lucide-react'
 import { ContactForm } from './ContactForm'
-import { PageHero } from '@/components/pages/PageHero'
-import { BrandIcon } from '@/components/SocialLinks'
-import { FadeIn, PageTransition, StaggerContainer, StaggerItem, smoothEase } from '@/components/motion'
+import type { GlyphId } from '@/components/ui/GlyphWord'
+import { useProtectedEmail } from '@/components/ProtectedEmail'
+import { ContactDetailRow } from '@/components/ui/ContactDetailRow'
+import { Eyebrow } from '@/components/ui/Eyebrow'
+import { SocialChip } from '@/components/ui/SocialChip'
+import { SITE } from '@/lib/site'
+import { keepHyphenatedWords } from '@/lib/typography'
 import { socialLinks } from '@/lib/socialLinks'
 import * as m from '@/paraglide/messages'
 
+const HERO_GLYPHS: ReadonlyArray<GlyphId> = [11, 8, 6, 1, 0]
+
+/** Mono sub-heading used for "Kontaktní údaje" / "Sledujte mě". */
+const SUBHEADING_CLASS = 'font-mono text-label text-ink uppercase'
+
+/**
+ * Kontakt — one hero band: intro, contact details and socials on the left, the dark form window on the
+ * right (≥ xl). Below xl the form window stacks under the details, as in the mobile design.
+ */
 export function ContactPage() {
     return (
-        <PageTransition>
-            <ContactHero />
-            <ContactContent />
-        </PageTransition>
-    )
-}
-
-function ContactHero() {
-    return (
-        <PageHero label={m.contact_label()} subtitle={m.contact_subtitle()}>
-            {m.contact_heading_1()} <br />
-            <span className="text-accent">{m.contact_heading_2()}</span>
-        </PageHero>
-    )
-}
-
-function ContactContent() {
-    return (
-        <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-20">
-            <div className="grid gap-8 sm:gap-12 lg:grid-cols-2 lg:gap-16">
+        <section aria-labelledby="contact-title" className="bg-grain">
+            <div className="container-page grid gap-10 pt-[clamp(1.75rem,5.7143vw+0.3571rem,5.5rem)] pb-14 xl:grid-cols-[minmax(0,1fr)_minmax(0,36.25rem)] xl:gap-20 xl:pb-30">
                 <ContactInfo />
-                <ContactForm />
+                <div className="max-sm:-mx-2">
+                    <ContactForm />
+                </div>
             </div>
         </section>
     )
@@ -38,116 +34,50 @@ function ContactContent() {
 
 function ContactInfo() {
     return (
-        <FadeIn direction="left">
-            <div className="space-y-6 sm:space-y-8">
-                <div>
-                    <h2 className="mb-3 text-2xl font-bold sm:mb-4 sm:text-3xl">{m.contact_info_heading()}</h2>
-                    <p className="text-base text-text-muted sm:text-lg">{m.contact_info_subtitle()}</p>
-                </div>
-
-                <StaggerContainer staggerDelay={0.1} className="space-y-0">
-                    <StaggerItem>
-                        <ContactCard
-                            href="mailto:jd@jandrly.cz"
-                            icon={<Mail size={24} />}
-                            label={m.contact_label_email()}
-                            value="jd@jandrly.cz"
-                        />
-                    </StaggerItem>
-                    <StaggerItem>
-                        <ContactCard
-                            icon={<MapPin size={24} />}
-                            label={m.contact_label_location()}
-                            value={m.contact_location_value()}
-                            hasSeparator
-                        />
-                    </StaggerItem>
-                    <StaggerItem>
-                        <ContactCard
-                            href="tel:+420735190454"
-                            icon={<Phone size={24} />}
-                            label={m.contact_label_phone()}
-                            value="+420 735 190 454"
-                            hasSeparator
-                        />
-                    </StaggerItem>
-                </StaggerContainer>
-
-                <FadeIn delay={0.4}>
-                    <div>
-                        <h3 className="mb-4 text-sm font-bold uppercase tracking-wider text-text-subtle">{m.contact_follow_me()}</h3>
-                        <div className="flex gap-4">
-                            {socialLinks.map((link) => (
-                                <SocialLink key={link.label} href={link.href} icon={<BrandIcon icon={link.icon} />} label={link.label} />
-                            ))}
-                        </div>
-                    </div>
-                </FadeIn>
+        <div className="flex min-w-0 flex-col gap-9 lg:gap-14">
+            <div className="flex flex-col gap-5 lg:gap-7">
+                <Eyebrow tone="teal" glyphs={HERO_GLYPHS}>
+                    {m.contact_eyebrow()}
+                </Eyebrow>
+                <h1
+                    id="contact-title"
+                    className="font-display text-[clamp(2.5rem,3.4286vw+1.6643rem,4.75rem)] leading-[0.97] font-black tracking-[-0.037em] text-ink"
+                >
+                    {m.contact_title()}
+                </h1>
+                <p className="text-lead text-ink-soft">{m.contact_subtitle()}</p>
             </div>
-        </FadeIn>
+
+            <div className="flex flex-col gap-3.5 lg:gap-5">
+                <h2 className={SUBHEADING_CLASS}>{m.contact_info_heading()}</h2>
+                <p className="text-body text-ink-soft">{keepHyphenatedWords(m.contact_info_subtitle())}</p>
+                <ContactDetails />
+            </div>
+
+            <div className="flex flex-col gap-3 lg:gap-4">
+                <h2 id="contact-social-heading" className={SUBHEADING_CLASS}>
+                    {m.contact_follow_me()}
+                </h2>
+                <ul aria-labelledby="contact-social-heading" className="flex gap-2 lg:gap-3">
+                    {socialLinks.map((link) => (
+                        <li key={link.label} className="flex min-w-0 flex-1 lg:flex-none">
+                            <SocialChip href={link.href} label={link.label} icon={link.icon} className="w-full" />
+                        </li>
+                    ))}
+                </ul>
+            </div>
+        </div>
     )
 }
 
-interface ContactCardProps {
-    href?: string
-    icon: React.ReactNode
-    label: string
-    value: string
-    hasSeparator?: boolean
-}
+function ContactDetails() {
+    const email = useProtectedEmail()
 
-function ContactCard({ href, icon, label, value, hasSeparator = false }: ContactCardProps) {
-    const content = (
-        <>
-            <motion.div
-                className="flex h-12 w-12 shrink-0 items-center justify-center text-text-subtle transition-colors group-hover:text-accent"
-                whileHover={{ scale: 1.1 }}
-                transition={{ duration: 0.2, ease: smoothEase }}
-                aria-hidden="true"
-            >
-                {icon}
-            </motion.div>
-            <div>
-                <span className="mb-1 block text-sm font-bold uppercase tracking-wider text-text-subtle">{label}</span>
-                <span className="text-xl font-medium">{value}</span>
-            </div>
-        </>
-    )
-
-    const className = `group flex items-start gap-5 py-6 transition-colors sm:py-8 ${
-        hasSeparator ? 'border-t border-border hover:border-accent' : ''
-    }`
-
-    if (href) {
-        return (
-            <a href={href} className={className}>
-                {content}
-            </a>
-        )
-    }
-
-    return <div className={className}>{content}</div>
-}
-
-interface SocialLinkProps {
-    href: string
-    icon: React.ReactNode
-    label: string
-}
-
-function SocialLink({ href, icon, label }: SocialLinkProps) {
     return (
-        <motion.a
-            href={href}
-            aria-label={label}
-            target="_blank"
-            rel="noreferrer"
-            className="flex h-10 w-10 items-center justify-center text-white transition-colors hover:text-accent"
-            whileHover={{ scale: 1.1, rotate: 5 }}
-            whileTap={{ scale: 0.95 }}
-            transition={{ duration: 0.2, ease: smoothEase }}
-        >
-            {icon}
-        </motion.a>
+        <div className="border-b-[1.5px] border-ink">
+            <ContactDetailRow icon={Mail} label={m.contact_label_email()} value={email.display} href={email.href} />
+            <ContactDetailRow icon={MapPin} label={m.contact_label_location()} value={m.contact_location_value()} />
+            <ContactDetailRow icon={Phone} label={m.contact_label_phone()} value={SITE.phone.display} href={SITE.phone.href} />
+        </div>
     )
 }

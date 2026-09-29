@@ -19,15 +19,45 @@ pnpm build
 
 ## Contact form protection
 
-The contact form requires a Cloudflare Turnstile widget and validates every token on the server before sending email.
+The contact form (`src/server/contact/`) runs every submission through an Effect pipeline; cheap local checks run first:
 
-1. Create a managed Turnstile widget for `jandrly.cz` in Cloudflare.
-2. Copy `.env.example` to `.env` for local development.
-3. Set `VITE_TURNSTILE_SITE_KEY` to the public sitekey.
-4. Set `TURNSTILE_SECRET_KEY` to the private secret key.
-5. Set the same variables in the production environment and redeploy so Vite embeds the public sitekey during the build.
+1. **Schema** (`schema.ts`) – zod validation; CR/LF rejected in name/email/phone, control/zero-width/bidi characters stripped, header-safe subject.
+2. **Honeypot** – hidden `subject` field, ignored by password managers.
+3. **Signed form token** (`formToken.ts`) – `issueFormToken` returns `issuedAt.nonce.HMAC`; accepted only 3 s – 2 h after issue, measured on the server clock. Payloads without tokens are direct POSTs.
+4. **Content classifier** (`checks.ts`) – mixed-case gibberish, dot-stuffed Gmail, long tokens, >2 URLs, SEO/backlink and scam phrases (EN + CS), mostly non-Latin text, URLs in the name.
+5. **Rate limit** (`rateLimit.ts`) – 3/h per IP, 2/day per normalized email. Upstash Redis when configured, otherwise in-memory (per serverless instance only).
+6. **Vercel BotID** (`botId.ts`) – only on Vercel; fails open on errors.
+7. **Turnstile** (`turnstile.ts`) – strict siteverify: `remoteip`, `idempotency_key`, `action === "contact"`, hostname allowlist, `challenge_ts` < 300 s, `cdata` = form token nonce.
+8. **Email domain** (`emailDomain.ts`) – disposable-domain list + MX lookup (2 s timeout, fails open).
+9. **Send** via Resend (idempotency key = nonce) or, with `CONTACT_DRY_RUN=true`, a redacted log line.
 
-Never expose `TURNSTILE_SECRET_KEY` through a `VITE_` variable.
+Bot and spam verdicts (2, 3, 4, 6, 8) get a fake `success` and one `contact_form` JSON log line (`outcome`, `reason`, `ip`, `hostname`, hashed email); message bodies and addresses are never logged.
+
+### Environment
+
+| Variable                                              | Purpose                                                                                                                               |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `VITE_TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY`    | Turnstile keys. Locally use the test keys `1x00000000000000000000AA` / `1x0000000000000000000000000000000AA` (refused in production). |
+| `FORM_TOKEN_SECRET`                                   | HMAC secret for form tokens (`openssl rand -hex 32`). Required.                                                                       |
+| `CONTACT_ALLOWED_HOSTNAMES`                           | Hostnames Turnstile may report. Default `jandrly.cz,www.jandrly.cz` (+ `localhost` outside production).                               |
+| `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` | Optional shared rate limiting.                                                                                                        |
+| `CONTACT_DRY_RUN`                                     | `true` logs instead of sending. Local testing only.                                                                                   |
+| `RESEND_SEND` / `RESEND_FROM` / `RESEND_TO`           | Resend API key, sender, recipient.                                                                                                    |
+
+Copy `.env.example` to `.env` for local development. Set the same variables in Vercel and redeploy so Vite embeds the public sitekey. Never expose secrets through a `VITE_` variable.
+
+### Dashboard steps
+
+Step-by-step setup for every external service (all on free plans) is in [docs/production-setup.md](docs/production-setup.md). In short:
+
+- **Cloudflare Turnstile**: hostnames `jandrly.cz` and `www.jandrly.cz` only, no `localhost` (local dev uses the test keys).
+- **Vercel Firewall**: one rate-limit rule for `POST` requests whose path starts with `/_serverFn/` (10 requests / 10 min per IP, action: deny).
+- **Vercel BotID**: runs in free Basic mode from the code; nothing to enable. Don't turn on Deep Analysis (paid). The challenge proxy rewrites are generated from the `routeRules` in `vite.config.ts`.
+- **Upstash** (optional): create a Redis database and add its REST URL/token to Vercel.
+
+### Form spam or inbox spam?
+
+Every form message is sent by Resend from `RESEND_FROM` with the subject _"New portfolio contact request from …"_. If a spam email shows up in the Resend log (Emails), it came through the form – check the matching `contact_form` log line in Vercel. If it is not in the Resend log, it was sent straight to the inbox; the address is no longer in the page HTML or JSON-LD, but older scraped copies will keep receiving spam.
 
 ## Testing
 

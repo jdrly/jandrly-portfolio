@@ -1,24 +1,15 @@
 import { useLocation } from '@tanstack/react-router'
-import { Globe } from 'lucide-react'
 import type { Locale } from '@/paraglide/runtime'
+import { cn } from '@/lib/utils'
 import * as m from '@/paraglide/messages'
-import { baseLocale, cookieMaxAge, cookieName, getLocale } from '@/paraglide/runtime'
+import { cookieMaxAge, cookieName, deLocalizeHref, getLocale, localizeHref } from '@/paraglide/runtime'
 
-/**
- * Build the target URL for language switching.
- * - For base locale (cs): strip /en/ prefix, use root path
- * - For other locales (en): add /{locale}/ prefix
- */
+/** Short visible codes; Czech uses the familiar "CZ". */
+const LOCALE_CODES: Record<Locale, string> = { cs: 'CZ', en: 'EN' }
+
+/** The current page in another locale, using Paraglide's URL patterns (see `vite.config.ts`). */
 function buildLocalizedPath(pathname: string, targetLocale: Locale): string {
-    // Remove any existing locale prefix (/en/) to get the base path
-    const basePath = pathname.replace(/^\/en(?=\/|$)/, '') || '/'
-
-    if (targetLocale === baseLocale) {
-        // Czech (base locale) uses root URLs without prefix
-        return basePath
-    }
-    // Other locales (English) use /{locale}/path
-    return `/${targetLocale}${basePath}`
+    return localizeHref(deLocalizeHref(pathname), { locale: targetLocale })
 }
 
 /**
@@ -30,49 +21,37 @@ function handleLanguageSwitch(targetLocale: Locale) {
     // Set the cookie BEFORE navigation so the server reads the correct locale
     document.cookie = `${cookieName}=${targetLocale}; path=/; max-age=${cookieMaxAge}; SameSite=Lax`
     // Let the default anchor navigation proceed to the new URL
-    // The cookie is now set, so server will detect the correct locale
 }
 
-export function LanguageSwitcher() {
+interface LanguageSwitcherProps {
+    className?: string
+}
+
+/** Mono "EN" / "CZ" link to the current page in the other locale (full document navigation). */
+export function LanguageSwitcher({ className }: LanguageSwitcherProps) {
     const location = useLocation()
     const currentLocale = getLocale()
     const targetLocale: Locale = currentLocale === 'cs' ? 'en' : 'cs'
-
     const targetPath = buildLocalizedPath(location.pathname, targetLocale)
+    const targetName = targetLocale === 'cs' ? m.lang_cs() : m.lang_en()
 
     return (
         <a
             href={targetPath}
+            hrefLang={targetLocale}
             onClick={() => handleLanguageSwitch(targetLocale)}
-            className="group relative flex items-center gap-2 rounded-full border border-border bg-bg-card/80 px-3 py-2 text-sm font-medium text-white backdrop-blur-sm transition-[border-color,background-color] hover:border-accent hover:bg-bg-elevated"
-            aria-label={m.language_switcher_label()}
+            className={cn(
+                'inline-flex items-center gap-2 border-b-2 border-transparent py-1.5 font-mono text-[0.875rem] leading-[1.3] font-semibold tracking-[0.0625rem] text-ink transition-colors hover:border-ink',
+                className,
+            )}
         >
-            <Globe size={16} className="text-text-muted group-hover:text-accent" aria-hidden="true" />
-            <span className="uppercase">{currentLocale}</span>
-        </a>
-    )
-}
-
-export function LanguageSwitcherMinimal() {
-    const location = useLocation()
-    const currentLocale = getLocale()
-    const targetLocale: Locale = currentLocale === 'cs' ? 'en' : 'cs'
-
-    const targetPath = buildLocalizedPath(location.pathname, targetLocale)
-
-    return (
-        <a
-            href={targetPath}
-            onClick={() => handleLanguageSwitch(targetLocale)}
-            className="group relative rounded-full p-2 text-white transition-colors hover:bg-bg-elevated sm:p-3"
-            aria-label={m.language_switcher_label()}
-        >
-            <Globe size={20} aria-hidden="true" />
-            <span
-                className="pointer-events-none absolute -top-10 left-1/2 hidden -translate-x-1/2 whitespace-nowrap rounded-full bg-bg-elevated px-3 py-1 text-xs opacity-0 transition-opacity group-hover:opacity-100 sm:block"
-                aria-hidden="true"
-            >
-                {currentLocale === 'cs' ? m.lang_en() : m.lang_cs()}
+            <span aria-hidden="true" className="font-normal text-ink-soft">
+                {LOCALE_CODES[currentLocale]} /
+            </span>
+            {LOCALE_CODES[targetLocale]}
+            <span className="sr-only">
+                {' – '}
+                <span lang={targetLocale}>{targetName}</span> ({m.language_switcher_label()})
             </span>
         </a>
     )

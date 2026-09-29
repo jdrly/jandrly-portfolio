@@ -24,26 +24,7 @@ import { Button, TextField } from '@mui/material'
 // Loads 2,225 modules, takes ~4.2s extra in dev
 ```
 
-**Correct - Next.js 13.5+ (recommended):**
-
-```js
-// next.config.js - automatically optimizes barrel imports at build time
-module.exports = {
-  experimental: {
-    optimizePackageImports: ['lucide-react', '@mui/material']
-  }
-}
-```
-
-```tsx
-// Keep the standard imports - Next.js transforms them to direct imports
-import { Check, X, Menu } from 'lucide-react'
-// Full TypeScript support, no manual path wrangling
-```
-
-This is the recommended approach because it preserves TypeScript type safety and editor autocompletion while still eliminating the barrel import cost.
-
-**Correct - Direct imports (non-Next.js projects):**
+**Correct - Direct imports:**
 
 ```tsx
 import Button from '@mui/material/Button'
@@ -51,7 +32,9 @@ import TextField from '@mui/material/TextField'
 // Loads only what you use
 ```
 
-> **TypeScript warning:** Some libraries (notably `lucide-react`) don't ship `.d.ts` files for their deep import paths. Importing from `lucide-react/dist/esm/icons/check` resolves to an implicit `any` type, causing errors under `strict` or `noImplicitAny`. Prefer `optimizePackageImports` when available, or verify the library exports types for its subpaths before using direct imports.
+**With Vite:** third-party dependencies are pre-bundled in dev (`optimizeDeps`) and tree-shaken in production builds, so the cost mostly shows up for libraries excluded from pre-bundling and for your own source barrels (e.g. `src/components/index.ts`), which Vite serves module-by-module in dev. Import app code from the file that defines it rather than through a local `index.ts` re-export.
+
+> **TypeScript warning:** Some libraries (notably `lucide-react`) don't ship `.d.ts` files for their deep import paths. Importing from `lucide-react/dist/esm/icons/check` resolves to an implicit `any` type, causing errors under `strict` or `noImplicitAny`. For such libraries keep the root import (Vite pre-bundles and tree-shakes it), or verify the library exports types for its subpaths before using direct imports.
 
 These optimizations provide 15-70% faster dev boot, 28% faster builds, 40% faster cold starts, and significantly faster HMR.
 

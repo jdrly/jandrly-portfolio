@@ -2,7 +2,7 @@
 title: Hoist Static I/O to Module Level
 impact: HIGH
 impactDescription: avoids repeated file/network I/O per request
-tags: server, io, performance, next.js, route-handlers, og-image
+tags: server, io, performance, route-handlers, og-image
 ---
 
 ## Hoist Static I/O to Module Level
@@ -14,8 +14,8 @@ When loading static assets (fonts, logos, images, config files) in route handler
 **Incorrect (reads font file on every request):**
 
 ```typescript
-// app/api/og/route.tsx
-import { ImageResponse } from 'next/og'
+// server route handler, e.g. src/routes/api/og.tsx
+import { ImageResponse } from '@vercel/og'
 
 export async function GET(request: Request) {
   // Runs on EVERY request - expensive!
@@ -40,8 +40,8 @@ export async function GET(request: Request) {
 **Correct (loads once at module initialization):**
 
 ```typescript
-// app/api/og/route.tsx
-import { ImageResponse } from 'next/og'
+// server route handler, e.g. src/routes/api/og.tsx
+import { ImageResponse } from '@vercel/og'
 
 // Module-level: runs ONCE when module is first imported
 const fontData = fetch(
@@ -69,8 +69,8 @@ export async function GET(request: Request) {
 **Correct (synchronous fs at module level):**
 
 ```typescript
-// app/api/og/route.tsx
-import { ImageResponse } from 'next/og'
+// server route handler, e.g. src/routes/api/og.tsx
+import { ImageResponse } from '@vercel/og'
 import { readFileSync } from 'fs'
 import { join } from 'path'
 

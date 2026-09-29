@@ -14,7 +14,7 @@ March 2026
 
 ## Abstract
 
-Guide for implementing smooth, native-feeling animations using React's View Transition API. Covers the `<ViewTransition>` component, `addTransitionType`, CSS view transition pseudo-elements, shared element transitions, Suspense reveals, list reorder, directional navigation, and Next.js integration. Includes a step-by-step implementation workflow, ready-to-use CSS animation recipes, and common mistake warnings.
+Guide for implementing smooth, native-feeling animations using React's View Transition API. Covers the `<ViewTransition>` component, `addTransitionType`, CSS view transition pseudo-elements, shared element transitions, Suspense reveals, list reorder, and directional navigation. Includes a step-by-step implementation workflow, ready-to-use CSS animation recipes, and common mistake warnings.
 
 ---
 
@@ -29,7 +29,6 @@ Guide for implementing smooth, native-feeling animations using React's View Tran
    - [Shared Element Transitions](#shared-element-transitions)
    - [Common Patterns](#common-patterns)
    - [How Multiple VTs Interact](#how-multiple-vts-interact)
-   - [Next.js Integration](#nextjs-integration)
    - [Accessibility](#accessibility)
 2. [Implementation Workflow](#implementation-workflow)
    - [Step 1: Audit the App](#step-1-audit-the-app)
@@ -42,7 +41,6 @@ Guide for implementing smooth, native-feeling animations using React's View Tran
    - [Common Mistakes](#common-mistakes)
 3. [Patterns and Guidelines](#patterns-and-guidelines)
 4. [CSS Animation Recipes](#css-animation-recipes)
-5. [View Transitions in Next.js](#view-transitions-in-nextjs)
 
 ---
 
@@ -79,8 +77,7 @@ Reserve directional slides for hierarchical navigation (list → detail) and ord
 
 ## Availability
 
-- **Next.js:** Do **not** install `react@canary` — the App Router already bundles React canary internally. `ViewTransition` works out of the box. `npm ls react` may show a stable-looking version; this is expected.
-- **Without Next.js:** Install `react@canary react-dom@canary` (`ViewTransition` is not in stable React).
+- **React:** `ViewTransition` and `addTransitionType` are exported from stable `react` 19.3+. On older React versions, install `react@canary react-dom@canary`.
 - Browser support: Chromium 111+, Firefox 144+, Safari 18.2+. Graceful degradation.
 
 ---
@@ -299,12 +296,6 @@ When a parent VT exits, nested VTs inside it do **not** fire their own enter/exi
 
 ---
 
-## Next.js Integration
-
-See the [View Transitions in Next.js](#view-transitions-in-nextjs) section below.
-
----
-
 ## Accessibility
 
 Always add reduced motion CSS to your global stylesheet:
@@ -476,8 +467,6 @@ Walk through every row in the navigation map from Step 1:
 - **Named VT in a reusable component** — if a component with a named VT is rendered in both a modal/popover *and* a page, both mount simultaneously and break the morph. Make the name conditional or move it to the specific consumer.
 - **`router.back()` for back navigation** — `router.back()` triggers synchronous `popstate`, incompatible with view transitions. Use `router.push()` with an explicit URL.
 
-For Next.js-specific steps, see the Next.js section below.
-
 ---
 
 # Patterns and Guidelines
@@ -485,8 +474,6 @@ For Next.js-specific steps, see the Next.js section below.
 ## Searchable Grid with `useDeferredValue`
 
 ```tsx
-'use client';
-
 import { useDeferredValue, useState, ViewTransition, Suspense } from 'react';
 
 export default function SearchableGrid({ itemsPromise }) {
@@ -511,8 +498,6 @@ Per-item named VTs in deferred lists trigger cross-fades on every keystroke. Fix
 ## Card Expand/Collapse with `startTransition`
 
 ```tsx
-'use client';
-
 import { useState, useRef, startTransition, ViewTransition } from 'react';
 
 export default function ItemGrid({ items }) {
@@ -856,100 +841,3 @@ Avoids raster scaling artifacts on text by hiding the old snapshot and showing t
 }
 ```
 
----
-
-# View Transitions in Next.js
-
-## Setup
-
-```js
-// next.config.js
-experimental: { viewTransition: true }
-```
-
-Wraps every `<Link>` navigation in `document.startViewTransition`. Use `default="none"` to prevent competing animations. Do **not** install `react@canary` — the App Router already bundles it.
-
-## Next.js Implementation Additions
-
-**After Step 2:** Enable the experimental flag.
-
-**Step 4:** Use `transitionTypes` on `<Link>` (if available — see availability note below):
-```tsx
-<Link href="/photo/1" transitionTypes={["nav-forward"]}>View</Link>
-<Link href="/" transitionTypes={["nav-back"]}>Back</Link>
-```
-
-**After Step 6:** For same-route dynamic segments, use `key` + `name` + `share` pattern.
-
-## Layout-Level ViewTransition
-
-Don't add a layout-level VT wrapping `{children}` if pages have their own VTs — nested VTs never fire enter/exit inside a parent VT, so page-level enter/exit will silently not work. Remove the layout VT entirely. A bare VT in layout works only if pages have no VTs of their own. Layouts persist across navigations — don't use type-keyed maps in layouts.
-
-## The `transitionTypes` Prop
-
-Works in Server Components, no wrapper needed:
-```tsx
-<Link href="/products/1" transitionTypes={['nav-forward']}>View</Link>
-```
-
-**Availability:** Requires `experimental.viewTransition: true`. Available in Next.js 15+ canary builds and Next.js 16+. If unavailable, use `startTransition` + `addTransitionType` + `router.push()`. To check: `grep -r "transitionTypes" node_modules/next/dist/`. Reserve manual `startTransition` for non-link interactions.
-
-## `loading.tsx` as Suspense Boundary
-
-Next.js `loading.tsx` files are implicit `<Suspense>` boundaries. Wrap the skeleton in `<ViewTransition exit="...">` in `loading.tsx`, and the content in `<ViewTransition enter="..." default="none">` in the page. This is the Next.js-idiomatic equivalent of explicit `<Suspense fallback={...}>`. Same rules apply: use simple string props (not type maps) since Suspense reveals fire without transition types.
-
-## Server-Side Filtering with `router.replace`
-
-For search/sort/filter that re-renders on the server (via URL params), use `startTransition` + `router.replace`. VTs activate because the update is inside `startTransition`. List items wrapped in `<ViewTransition key={item.id}>` animate reorder. This is the server-component alternative to the client-side `useDeferredValue` pattern.
-
-## Two-Layer Pattern (Directional + Suspense)
-
-Directional slides + Suspense reveals coexist because they fire at different moments. Place the directional VT in the **page component** (not layout):
-
-```tsx
-<ViewTransition
-  enter={{ "nav-forward": "slide-from-right", default: "none" }}
-  exit={{ "nav-forward": "slide-to-left", default: "none" }}
-  default="none"
->
-  <div>
-    <Suspense fallback={<ViewTransition exit="slide-down"><Skeleton /></ViewTransition>}>
-      <ViewTransition enter="slide-up" default="none"><Content /></ViewTransition>
-    </Suspense>
-  </div>
-</ViewTransition>
-```
-
-## Shared Elements Across Routes
-
-```tsx
-// List page
-<Link href={`/products/${product.id}`} transitionTypes={['nav-forward']}>
-  <ViewTransition name={`product-${product.id}`}>
-    <Image src={product.image} alt={product.name} width={400} height={300} />
-  </ViewTransition>
-</Link>
-
-// Detail page — same name
-<ViewTransition name={`product-${product.id}`}>
-  <Image src={product.image} alt={product.name} width={800} height={600} />
-</ViewTransition>
-```
-
-## Same-Route Dynamic Segment Transitions
-
-Page stays mounted on dynamic segment change — enter/exit never fire. Use `key` + `name` + `share`:
-
-```tsx
-<Suspense fallback={<Skeleton />}>
-  <ViewTransition key={slug} name={`collection-${slug}`} share="auto" default="none">
-    <Content slug={slug} />
-  </ViewTransition>
-</Suspense>
-```
-
-## Server Components
-
-- `<ViewTransition>` works in Server and Client Components
-- `<Link transitionTypes>` works in Server Components
-- `addTransitionType` and programmatic nav require Client Components
