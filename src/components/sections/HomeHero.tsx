@@ -70,7 +70,7 @@ function SpecRule() {
 /** Desktop: two pseudo-SQL columns (query + services 01–02, status + services 03–04). */
 function SpecColumns() {
     return (
-        <div className="hidden grid-cols-1 gap-x-10 gap-y-6 font-mono text-[0.8125rem] leading-normal tracking-[0.0125rem] text-ink lg:grid xl:grid-cols-2">
+        <div className="hidden grid-cols-1 gap-x-10 gap-y-6 font-mono text-[0.8125rem] leading-normal tracking-[0.0125rem] text-ink lg:grid lg:max-w-[40rem] xl:grid-cols-2 lg:[@media(max-height:66rem)]:hidden">
             <div className="flex flex-col gap-2.5">
                 <div>
                     <p className={SPEC_LINE_CLASS}>
@@ -157,12 +157,13 @@ export function HomeHero() {
     // the module preloads, so its download starts first. Browsers without AVIF skip it and load the WebP <img>.
     preload(HERO_PORTRAIT.avif, { as: 'image', type: 'image/avif', fetchPriority: 'high' })
 
-    // Up to the 90rem page width the columns keep the design's 500 / 280 / 660 split. Wider than that, the portrait
-    // column stretches to the viewport's left edge (50% − 13.75rem is 500px at 1440px) and a fourth, empty column keeps
-    // the text column aligned with the rest of the page.
+    // ≥ lg the hero fills the viewport: at least one screen tall, so the name plate sits at the bottom edge, and full
+    // width. The portrait is sized by the viewport height (72.2svh keeps the design's 780 × 1080 crop), capped at the
+    // design's 780 / 1440 share of the width, so the face never zooms in on wide screens. It splits into the design's
+    // 500 / 280 columns (the name plate starts at the second); the info panel takes the rest of the width.
     return (
         <section aria-labelledby="home-heading" className="bg-grain overflow-hidden">
-            <div className="relative mx-auto grid max-w-page grid-cols-1 grid-rows-[auto_27.5rem_auto] md:grid-rows-[auto_min(110vw,56rem)_auto] lg:grid-cols-[minmax(0,500fr)_minmax(0,280fr)_minmax(0,660fr)] lg:grid-rows-[1fr_auto] min-[90rem]:max-w-none min-[90rem]:grid-cols-[calc(50%-13.75rem)_17.5rem_41.25rem_minmax(0,1fr)]">
+            <div className="relative mx-auto grid max-w-page grid-cols-1 grid-rows-[auto_27.5rem_auto] md:grid-rows-[auto_min(110vw,56rem)_auto] lg:min-h-svh lg:max-w-none lg:grid-cols-[calc(var(--hero-portrait)*0.641)_calc(var(--hero-portrait)*0.359)_minmax(0,1fr)] lg:grid-rows-[1fr_auto] lg:[--hero-portrait:min(54.1667vw,72.2222svh)]">
                 <div className="col-start-1 row-start-1 flex items-center justify-between gap-6 px-gutter py-3.5 lg:hidden">
                     <Wordmark />
                     <MobileMenuToggle />
@@ -187,7 +188,7 @@ export function HomeHero() {
                     className="relative z-10 col-start-1 row-start-2 ml-[11.2821vw] self-end md:ml-11 lg:col-[1/4] lg:ml-[12%] xl:col-[2/4] xl:ml-0"
                 />
 
-                <div className="relative z-10 col-start-1 row-start-3 flex min-w-0 flex-col gap-[26px] px-gutter pt-7 pb-11 lg:col-start-3 lg:row-start-1 lg:gap-10 lg:pt-16 lg:pr-[min(4.7222vw,4.25rem)] lg:pb-[17px] lg:pl-5">
+                <div className="relative z-10 col-start-1 row-start-3 flex min-w-0 flex-col gap-[26px] px-gutter pt-7 pb-11 lg:col-start-3 lg:row-start-1 lg:gap-[clamp(1rem,7.4074svh-2.5rem,2.5rem)] lg:pt-[clamp(2.5rem,10svh-2.75rem,4rem)] lg:pr-[min(4.7222vw,4.25rem)] lg:pb-[17px] lg:pl-5">
                     <span
                         aria-hidden="true"
                         className="pointer-events-none absolute top-7 right-[min(1.9444vw,1.75rem)] bottom-0 -left-5 hidden border-t-[1.5px] border-r-[1.5px] border-line lg:block"
@@ -196,7 +197,7 @@ export function HomeHero() {
                     <HeroTopRow />
 
                     <div className="flex flex-col gap-[26px] lg:items-end lg:gap-5">
-                        <GlyphName className="lg:text-[clamp(2.75rem,6.25vw-1.25rem,4rem)]" />
+                        <GlyphName className="lg:text-[clamp(2.25rem,min(6.25vw-1.25rem,5.9259svh),4rem)]" />
                         <div className="flex w-full items-center justify-between gap-6">
                             <Barcode className="h-7 w-[127px] lg:h-10 lg:w-[173px]" />
                             <Sparkles variant="level" className="w-[84px] lg:hidden" />
@@ -208,7 +209,7 @@ export function HomeHero() {
                         <p className="font-mono text-[0.75rem] leading-normal font-semibold tracking-[0.0625rem] text-teal-ink uppercase lg:text-[0.8125rem] lg:tracking-[0.075rem]">
                             {m.home_hero_eyebrow()}
                         </p>
-                        <h1 id="home-heading" className="text-h3 text-ink">
+                        <h1 id="home-heading" className="text-h3 text-ink lg:max-w-[36rem]">
                             {m.home_hero_title()}
                         </h1>
                         <p className="text-body leading-normal text-ink-soft lg:max-w-[30rem]">{m.home_hero_lead()}</p>
@@ -217,7 +218,7 @@ export function HomeHero() {
                     <SpecColumns />
                     <SpecBlock />
 
-                    <div className="flex flex-col gap-4 lg:flex-row lg:flex-wrap lg:items-center lg:gap-5 xl:gap-7">
+                    <div className="flex flex-col gap-4 lg:mt-auto lg:flex-row lg:flex-wrap lg:items-center lg:gap-5 xl:gap-7">
                         <div
                             aria-hidden="true"
                             className="flex items-center gap-5 font-mono leading-[1.2] font-medium tracking-[0.0125rem] text-ink lg:flex-1 lg:leading-normal xl:gap-7"
