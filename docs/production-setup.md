@@ -161,7 +161,7 @@ After this, new and changed pages reach Bing automatically through IndexNow (see
 
 Seznam still has a real share of Czech search.
 
-1. Open https://webmaster.seznam.cz and sign in with a Seznam account (create one for free if needed).
+1. Open https://reporter.seznam.cz/wm and sign in with a Seznam account (create one for free if needed).
 2. Add the site `https://www.jandrly.cz`.
 3. Choose verification by **meta tag**. Copy the `content` value of the `seznam-wmt` tag.
 4. In Vercel, add `VITE_SEZNAM_SITE_VERIFICATION` = that value, redeploy, then confirm verification in Seznam Webmaster.
