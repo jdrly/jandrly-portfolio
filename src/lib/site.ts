@@ -30,6 +30,10 @@ export const SITE = {
         linkedin: 'https://www.linkedin.com/in/jandrly/',
         github: 'https://github.com/jdrly',
     },
+    /** Business directory listings, linked from the business in structured data (`sameAs`). */
+    listings: {
+        firmyCz: 'https://www.firmy.cz/detail/14079059-jan-drly-pardubice-polabiny.html',
+    },
 } as const
 
 /** Technologies shown on the About page and listed in structured data (`knowsAbout`). */

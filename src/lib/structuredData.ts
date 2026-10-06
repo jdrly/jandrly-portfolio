@@ -134,6 +134,7 @@ export function createPageStructuredData({ path, title, description }: PageGraph
         founder: { '@id': IDS.person },
         identifier: { '@type': 'PropertyValue', propertyID: 'IČO', value: SITE.companyId },
         areaServed: AREA_SERVED,
+        sameAs: Object.values(SITE.listings),
         knowsAbout: [...KNOWS_ABOUT],
         knowsLanguage: [...KNOWS_LANGUAGE],
         contactPoint: {

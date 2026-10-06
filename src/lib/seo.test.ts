@@ -84,6 +84,7 @@ describe('structured data', () => {
             expect(nodeOfType(graph, 'Organization')).toMatchObject({
                 '@id': `${SITE.origin}/#business`,
                 founder: { '@id': `${SITE.origin}/#person` },
+                sameAs: Object.values(SITE.listings),
             })
             expect(nodeOfType(graph, 'WebSite')).toMatchObject({ '@id': `${SITE.origin}/#website`, url: `${SITE.origin}/` })
         }

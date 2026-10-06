@@ -355,11 +355,15 @@ const run = promisify(execFile)
 
 async function runLighthouse(urls, args) {
     const dir = await mkdtemp(join(tmpdir(), 'seo-check-lh-'))
+    // Skip releases younger than a day (like pnpm's `minimumReleaseAge`): a dependency published minutes ago can
+    // still 404 on the registry and fail every page.
+    const before = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
     try {
         for (const [index, url] of urls.slice(0, args.lhLimit).entries()) {
             const output = join(dir, `${index}.json`)
             const flags = [
                 '-y',
+                `--before=${before}`,
                 'lighthouse@13',
                 url,
                 '--only-categories=performance,accessibility,best-practices,seo',
